@@ -5,6 +5,8 @@ import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'state/session.dart';
 
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(FinalsApp(session: Session(ApiClient())));
 }
@@ -17,6 +19,7 @@ class FinalsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Equipment Borrowing',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -25,9 +28,16 @@ class FinalsApp extends StatelessWidget {
       ),
       home: ListenableBuilder(
         listenable: session,
-        builder: (context, _) => session.signedIn
-            ? HomeScreen(session: session)
-            : LoginScreen(session: session),
+        builder: (context, _) {
+          if (!session.signedIn) {
+            // Signed out (or session expired): close any open detail or form pages.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+            });
+            return LoginScreen(session: session);
+          }
+          return HomeScreen(session: session);
+        },
       ),
     );
   }

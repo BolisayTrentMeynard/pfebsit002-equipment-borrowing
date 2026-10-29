@@ -32,18 +32,25 @@ class _CardShell extends StatelessWidget {
     required this.title,
     required this.chip,
     required this.lines,
+    this.onTap,
+    this.action,
   });
 
   final String title;
   final Widget chip;
   final List<String> lines;
+  final VoidCallback? onTap;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,18 +69,24 @@ class _CardShell extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 2),
                 child: Text(line, style: theme.textTheme.bodyMedium),
               ),
+            if (action != null) ...[
+              const SizedBox(height: 8),
+              action!,
+            ],
           ],
         ),
+      ),
       ),
     );
   }
 }
 
 class RequestCard extends StatelessWidget {
-  const RequestCard(this.data, {super.key, this.showBorrower = false});
+  const RequestCard(this.data, {super.key, this.showBorrower = false, this.onTap});
 
   final Map<String, dynamic> data;
   final bool showBorrower;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +94,7 @@ class RequestCard extends StatelessWidget {
     final days = text(data['requested_days']);
     return _CardShell(
       title: equipmentName(data['equipment']),
+      onTap: onTap,
       chip: StatusChip(text(data['status'], '')),
       lines: [
         'Reason: ${text(data['reason'])}',
@@ -108,9 +122,10 @@ class EquipmentCard extends StatelessWidget {
 }
 
 class CustodyCard extends StatelessWidget {
-  const CustodyCard(this.data, {super.key});
+  const CustodyCard(this.data, {super.key, this.onTap});
 
   final Map<String, dynamic> data;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +133,7 @@ class CustodyCard extends StatelessWidget {
     final overdue = data['overdue'] == true;
     return _CardShell(
       title: equipmentName(data['equipment']),
+      onTap: onTap,
       chip: StatusChip(overdue ? 'overdue' : 'RELEASED'),
       lines: [
         'With: ${text(borrower?['name'])}',
@@ -128,9 +144,10 @@ class CustodyCard extends StatelessWidget {
 }
 
 class ManualHandlingCard extends StatelessWidget {
-  const ManualHandlingCard(this.data, {super.key});
+  const ManualHandlingCard(this.data, {super.key, this.onResolve});
 
   final Map<String, dynamic> data;
+  final VoidCallback? onResolve;
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +161,16 @@ class ManualHandlingCard extends StatelessWidget {
         'Attempts: ${text(data['attempts'])}',
         'Last error: ${text(data['last_error'])}',
       ],
+      action: (onResolve != null && data['status'] == 'FAILED_NEEDS_HUMAN')
+          ? Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.tonalIcon(
+                onPressed: onResolve,
+                icon: const Icon(Icons.task_alt),
+                label: const Text('Mark as handled'),
+              ),
+            )
+          : null,
     );
   }
 }

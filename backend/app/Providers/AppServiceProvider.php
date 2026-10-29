@@ -2,21 +2,18 @@
 
 namespace App\Providers;
 
+use App\Services\FakeNotifier;
+use App\Services\Notifier;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        // The one place that decides which notifier is used. Swap FakeNotifier for a real one later.
+        $this->app->bind(Notifier::class, FakeNotifier::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //

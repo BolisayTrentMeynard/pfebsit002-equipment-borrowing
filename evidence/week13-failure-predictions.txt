@@ -1,0 +1,59 @@
+Week 13 - Failure Demo Predictions (written BEFORE running the demo)
+
+Student: Bolisay Trent Meynard, BSIT 3A
+Project: #5 Equipment Borrowing Reminder System
+Date and time written: 2026-10-29, 8:47 AM (Asia/Manila)
+Environment: Windows PC, PHP 8.2.12, Laravel 12, SQLite, database queue (php artisan queue:work)
+Test data: fake data only (demo seeder: 3 released items for Test Borrower One, each due in 10 hours)
+
+What I will run:
+1. php artisan db:seed --class=DemoScenarioSeeder
+2. php artisan reminders:run
+3. php artisan queue:work (left running about 30 seconds)
+
+My predictions:
+
+Case 1 - Projector A (EQ-001), success
+- The notifier works on the first try.
+- Expected status: SENT
+- Expected attempts: 1
+
+Case 2 - Projector B (EQ-002), transient failure recovered by retry
+- The notifier fails on attempt 1 and attempt 2 (simulated error), then works on attempt 3.
+- The queue waits 5 seconds, then 15 seconds between tries, so it should take about 20 seconds.
+- Expected status: SENT_AFTER_RETRY
+- Expected attempts: 3
+
+Case 3 - Laptop Cart 1 (EQ-003), permanent failure sent to a human
+- The notifier fails every time.
+- The job stops after exactly 3 attempts and does not retry forever.
+- Expected status: FAILED_NEEDS_HUMAN
+- Expected attempts: 3
+- Expected: last_error says "Simulated notifier timeout."
+- Expected: it appears in GET /api/manual-handling for the approver, and one entry is added to failed_jobs.
+
+Other things I expect:
+- Case 3 failing does not stop Case 1 and Case 2 from being sent.
+- The log (storage/logs/laravel.log) shows reminder.queued, reminder.attempt_failed, reminder.sent and reminder.needs_human lines with the same correlation_id.
+- After the approver resolves the failed one with a note, its status becomes HANDLED_MANUALLY and the manual-handling list is empty.
+
+Actual results (filled in after the run, 2026-10-29, about 9:15 AM Asia/Manila)
+Times in the Laravel log and database are UTC, 8 hours behind my clock. The demo ran at about 00:48 to 00:50 UTC, which is 8:48 to 8:50 AM for me, after the predictions above were written.
+
+Case 1 - Projector A (EQ-001): matched my prediction.
+- status SENT, attempts 1, last_error null.
+
+Case 2 - Projector B (EQ-002): matched my prediction.
+- status SENT_AFTER_RETRY, attempts 3, last_error null.
+- The worker output showed the first attempt failing at 00:49:41, the second at 00:49:48 and the third working at 00:50:03, so recovery took about 22 seconds in total (I predicted about 20).
+
+Case 3 - Laptop Cart 1 (EQ-003): matched my prediction.
+- status FAILED_NEEDS_HUMAN, attempts 3 (it stopped, no endless retry), last_error "Simulated notifier timeout."
+- It appeared in GET /api/manual-handling for the approver (notification id 3).
+
+Other expectations:
+- Cases 1 and 2 were still sent even though Case 3 failed: matched.
+- After the approver resolved notification 3 with the note "Called the borrower in person", the status became HANDLED_MANUALLY and the manual-handling list was empty afterwards: matched.
+- Not yet checked: the failed_jobs table count, and the reminder.* log lines of this demo run with a shared correlation_id (my first log screenshot only showed lines from the automated tests).
+
+Differences from predictions: none in the results. One small difference: the worker retries came about 7 seconds and 22 seconds after the first attempt instead of exactly 5 and 20.

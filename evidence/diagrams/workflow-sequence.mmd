@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor B as Borrower
+    actor A as Approver
+    actor S as Staff
+    participant App as Flutter Web app
+    participant API as Laravel API (trust boundary 1)
+    participant DB as Database + audit log
+    participant Job as Scheduler job (daily)
+    participant N as Notifier (fake service, trust boundary 2)
+
+    B->>App: Submit borrow request
+    App->>API: POST /requests (token)
+    API->>API: Validate input + check role (server side)
+    API->>DB: Save request (PENDING) + audit entry
+    A->>API: Approve or reject
+    API->>DB: APPROVED / REJECTED + audit entry
+    S->>API: Release item with due date
+    API->>DB: RELEASED + due_at + audit entry
+
+    Note over Job,N: Automation (Week 13 focus)
+    Job->>DB: Find RELEASED items due soon or overdue
+    Job->>Job: Check notification limit per item
+    Job->>N: Send reminder (timeout, correlation id)
+    alt Success
+        N-->>Job: 200 OK
+        Job->>DB: Notification SENT + log
+    else Transient failure (timeout / 503)
+        N-->>Job: error
+        Job->>N: Retry (max 3, backoff)
+        N-->>Job: 200 OK
+        Job->>DB: Notification SENT after retry + log
+    else Permanent failure (retries exhausted / invalid target)
+        N-->>Job: error
+        Job->>DB: Notification FAILED_NEEDS_HUMAN + log
+        Job-->>A: Appears in manual-handling list (human action point)
+    end
+
+    S->>API: Record return + inspection result
+    API->>DB: RETURNED then CLOSED + audit entry

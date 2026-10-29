@@ -1,6 +1,6 @@
 # Chunk 2: Reminder automation (scheduler, queue, retries, human handling)
 
-Status: built and tested by Claude in its own sandbox: 29 automated tests passed (16 old + 13 new), and a real end-to-end run with the queue worker and the real 5 s and 15 s retry waits gave the expected three outcomes. **Not yet tested on your PC.**
+Status: built and tested by Claude in its own sandbox: 29 automated tests passed (16 old + 13 new), and a real end-to-end run with the queue worker and the real 5 s and 15 s retry waits gave the expected three outcomes. **Tested later on the developer's PC (31 tests passed; the demo matched the written predictions, see `week13-failure-predictions.txt`).**
 
 ## What was added (and why)
 | Part | Files | Why |

@@ -19,3 +19,8 @@ Large files (screenshots, recordings) are on Google Drive: `PFEBSIT002 Finals / 
 | Activity 2 | `evidence/activity-2-failure-injection.md` | Failure injection results and controls | 2026-10-29 |
 | Setup proof | Drive: `week13-setup-laravel-flutter-running.png` | Laravel and Flutter running | 2026-10-28 |
 | Registry proof | Drive: `week13-project-registry-proof.png` | Teacher confirmation of the registry letter | 2026-10-29 |
+| Chunk 3 notes | `evidence/flutter-screen-flow.md` | Planned Flutter screens and states (Rounds A and B built from this) | 2026-10-29 |
+| Test matrix | `evidence/test-matrix.md` | Expected vs actual for AC-01 to AC-14, failures kept in the record, open gaps | 2026-10-29 |
+| Interpretation and maintainability note | `evidence/interpretation-and-maintainability-note.md` | What the results show and do not show, maintenance notes | 2026-10-29 |
+| Round A captures | Drive, Week 13 folder, file names as saved (login, validation, wrong password, borrower desktop and narrow, approver manual handling, staff custody, empty state, network error) | Flutter screens and states | 2026-10-29 |
+| Round B captures | Drive: `week13-chunk3b-flutter-test.png`, `week13-chunk3b-new-request-validation.png`, `week13-chunk3b-request-closed-history.png`, `week13-chunk3b-narrow-detail.png`, `week13-chunk3b-manual-handling-resolve.png` | Forms, full workflow history, narrow layout, failed item resolved | 2026-10-29 |

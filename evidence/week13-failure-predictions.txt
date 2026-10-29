@@ -54,6 +54,6 @@ Case 3 - Laptop Cart 1 (EQ-003): matched my prediction.
 Other expectations:
 - Cases 1 and 2 were still sent even though Case 3 failed: matched.
 - After the approver resolved notification 3 with the note "Called the borrower in person", the status became HANDLED_MANUALLY and the manual-handling list was empty afterwards: matched.
-- Not yet checked: the failed_jobs table count, and the reminder.* log lines of this demo run with a shared correlation_id (my first log screenshot only showed lines from the automated tests).
+- Checked afterwards (about 9:15 AM): the failed_jobs table count was 1, as expected, and the reminder.* lines of this demo run (reminder.queued, reminder.attempt_failed, reminder.sent, reminder.needs_human) were in the log with the shared correlation_id, as expected. (My first log screenshot only showed lines from the automated tests, so I retook it from the demo run.)
 
 Differences from predictions: none in the results. One small difference: the worker retries came about 7 seconds and 22 seconds after the first attempt instead of exactly 5 and 20.

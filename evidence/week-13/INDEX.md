@@ -4,7 +4,6 @@ Project: #5 Equipment Borrowing Reminder System. Topic: Advanced Automation and 
 
 Large files (screenshots, recordings) are on Google Drive: [3A final Submission, Week 13](https://drive.google.com/drive/folders/1Ng35RfI04woQm5cDN4HQqQACc6_zvmDm?usp=drive_link).
 
-Note: the workflow diagram was replaced on 2026-10-29 with a clearer version (`workflow-overview.png`) after the `week-13` tag was made. The tag still points to the earlier diagram (`workflow-sequence.png`), which is kept in the folder for the record.
 
 ## 1. Design and planning (written before building)
 

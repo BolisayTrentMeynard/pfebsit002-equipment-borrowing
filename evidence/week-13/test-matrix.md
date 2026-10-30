@@ -17,7 +17,7 @@ Method key: **Auto** = automated test (`php artisan test` or `flutter test`, all
 | AC-09 | Notifier fails twice, then works | 3 attempts, SENT_AFTER_RETRY | SENT_AFTER_RETRY, attempts 3, about 22 s total (predicted about 20 s) | Auto: `test_ac09_...`. Demo: Projector B (EQ-002), worker output captured | Pass |
 | AC-10 | Notifier always fails | Stops at 3 attempts, FAILED_NEEDS_HUMAN, in manual-handling list | FAILED_NEEDS_HUMAN, attempts 3, "Simulated notifier timeout.", 1 row in `failed_jobs` | Auto: `test_ac10_...`. Demo: Laptop Cart 1 (EQ-003); also shown again in the app on 2026-10-29 (Round B) | Pass |
 | AC-11 | Item at reminder limit | Skipped, no new notification | As expected | Auto: `test_ac11_limit_reached_means_no_new_notification` | Pass |
-| AC-12 | No secrets in logs or responses | None present | Not fully checked: reminder log lines and the token-hidden screenshots were reviewed by the developer; a full log search for tokens is not recorded | Auto: `test_token_is_stored_hashed` (token hashed at rest) | Partial |
+| AC-12 | No secrets in logs or responses | None present | Log search done 2026-10-30, 12:34 PM: `Select-String` for `Bearer`, `token` and `password` over the whole `backend/storage/logs/laravel.log` (518,963 bytes) returned no matches. Responses: the login response contains the token by design; the token-hidden screenshots were reviewed by the developer only | Auto: `test_token_is_stored_hashed` (token hashed at rest). Manual: log search screenshot `week13-ac12-log-search.png` (Drive). The log file contains both the automated test run (environment `testing`) and the demo run (environment `local`, 2026-10-29, with `SENT` and `SENT_AFTER_RETRY` lines), so the search covers the demo | Pass (logs only) |
 | AC-13 | Approver marks failed item handled | HANDLED_MANUALLY, audit entry | As expected | Auto: `test_ac13_...`. Demo: list empty after resolve. UI: "Mark as handled" removed the card, `week13-chunk3b-manual-handling-resolve.png` | Pass |
 | AC-14 | Flutter states and widths | Loading, empty, validation, unauthorized, server-error visible; desktop and narrow | Validation, wrong password, empty, network error, narrow layout shown. Unauthorized, server-error and loading states are built but not captured | Auto: 5 widget tests. UI: Round A and B screenshots (desktop and narrow) | Partial |
 
@@ -40,5 +40,5 @@ Method key: **Auto** = automated test (`php artisan test` or `flutter test`, all
 
 ## Gaps still open
 
-- AC-12: search `laravel.log` for `Bearer`, `token` and `password` and note the result.
+- AC-12: closed for logs on 2026-10-30 (no matches, see the row above). Not covered: a systematic check of every API response body.
 - AC-14: capture the unauthorized (expired session) and server-error states, or state that they are covered only by code.

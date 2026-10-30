@@ -2,7 +2,7 @@
 
 Project: #5 Equipment Borrowing Reminder System. Topic: Advanced Automation and Scripting. Git tag: `week-13`.
 
-Large files (screenshots, recordings) are on Google Drive: `PFEBSIT002 Finals / Week 13` (link to be added after confirming how the instructor wants it submitted).
+Large files (screenshots, recordings) are on Google Drive: [3A final Submission, Week 13](https://drive.google.com/drive/folders/1Ng35RfI04woQm5cDN4HQqQACc6_zvmDm?usp=drive_link).
 
 Note: the workflow diagram was replaced on 2026-10-29 with a clearer version (`workflow-overview.png`) after the `week-13` tag was made. The tag still points to the earlier diagram (`workflow-sequence.png`), which is kept in the folder for the record.
 
@@ -26,6 +26,13 @@ Note: the workflow diagram was replaced on 2026-10-29 with a clearer version (`w
 | Decision record 002 | `evidence/week-13/decision-record-002-api-auth.md` | Custom hashed-token auth instead of Sanctum | 2026-10-29 |
 | Activity 1 | `evidence/week-13/activity-1-architecture-decisions.md` | Triggers and patterns for 3 office workflows | 2026-10-29 |
 
+## Contract and policy
+
+| Item | File | What it shows | Date |
+|------|------|---------------|------|
+| API contract | `evidence/week-13/api-contract.md` | Endpoints, roles, inputs, outputs, error codes, status flows | 2026-10-30 |
+| Retry and recovery policy | `evidence/week-13/retry-and-recovery-policy.md` | Trigger, limits, retries, recovery paths, logging, known gaps | 2026-10-30 |
+
 ## 3. Build and testing notes
 
 | Item | File | What it shows | Date |
@@ -39,7 +46,7 @@ Note: the workflow diagram was replaced on 2026-10-29 with a clearer version (`w
 
 | Item | File | What it shows | Date |
 |------|------|---------------|------|
-| Test matrix | `evidence/week-13/test-matrix.md` | Expected vs actual for AC-01 to AC-14 (12 Pass, 2 Partial), failures kept in the record, open gaps | 2026-10-29 |
+| Test matrix | `evidence/week-13/test-matrix.md` | Expected vs actual for AC-01 to AC-14 (13 Pass, 1 Partial; AC-12 is Pass for logs only), failures kept in the record, open gaps | 2026-10-29 |
 | Interpretation and maintainability note | `evidence/week-13/interpretation-and-maintainability-note.md` | What the results show and do not show, maintenance notes | 2026-10-29 |
 
 ## 5. Screenshots and recordings (on Google Drive, not in the repo)
@@ -54,9 +61,10 @@ Note: the workflow diagram was replaced on 2026-10-29 with a clearer version (`w
 | Round B: full workflow | `week13-chunk3b-request-closed-history.png` | Closed request with full history | 2026-10-29 |
 | Round B: narrow layout | `week13-chunk3b-narrow-detail.png` | Request detail at narrow width | 2026-10-29 |
 | Round B: manual handling | `week13-chunk3b-manual-handling-resolve.png` | Failed item marked as handled | 2026-10-29 |
+| AC-12 log search | `week13-ac12-log-search.png` | Search of `laravel.log` for Bearer, token and password: no matches | 2026-10-30 |
 
 ## Known gaps (details in the test matrix)
 
-- AC-12 (no secrets in logs) is Partial: a full log search for tokens is not recorded.
+- AC-12 (no secrets in logs) was closed for logs on 2026-10-30: a search of `laravel.log` for `Bearer`, `token` and `password` found no matches. Response bodies were not searched systematically.
 - AC-14 (Flutter states and widths) is Partial: the unauthorized, server-error and loading states are built but not captured.
 - The notifier is a stand-in, so real email or SMS behavior is not shown.

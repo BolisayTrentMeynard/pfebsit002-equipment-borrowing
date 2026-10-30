@@ -13,7 +13,7 @@ Project: #5 Equipment Borrowing Reminder System. Date: 2026-10-29.
 
 - The notifier is a stand-in (`FakeNotifier`). It writes a log line. Nothing proves that a real email or SMS service would behave the same way.
 - Timeouts, rate limits and partial failures of a real service are simulated by two switches, not observed.
-- AC-12 (no secrets in logs) and two Flutter states (unauthorized and server error) are not fully evidenced yet (see `test-matrix.md`, gaps).
+- Two Flutter states (unauthorized and server error) are not fully evidenced yet (see `test-matrix.md`, gaps). AC-12 was closed for logs on 2026-10-30 (no matches for Bearer, token or password in `laravel.log`); response bodies were not searched systematically.
 - All data is fake and the load is tiny (a handful of items). Nothing here says how the system behaves with hundreds of items.
 
 ## Maintainability notes

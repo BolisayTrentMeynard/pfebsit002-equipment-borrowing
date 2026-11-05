@@ -51,7 +51,7 @@ Test D - Caddy stopped while the app is open: PARTLY DIFFERENT.
 Test E - key too short: first attempt did NOT apply the change (the .env edit was not saved, the real key was used, all 3 SENT). Recorded as a non-result. Second attempt: each job failed once, 3 reminder.permanent_failure lines (attempt 1) and 3 reminder.needs_human lines (attempts 1) (matches). The text "Signing is not configured correctly." in the app's Manual handling cards was not captured.
 
 ==================== ADDENDUM: optional re-runs (written 2026-11-05, BEFORE running) ====================
-Developer: write the time you commit this addendum here: 7:36 PM on 2026-11-05 (commit it before you run tests F and G)
+Developer: write the time you commit this addendum here: ____________ (commit it before you run tests F and G)
 
 Test F - "Try again" recovery (repeat of test D, second run)
 Run: log in as approver, open the Overdue tab, stop Caddy, press Refresh or switch tab until the error shows, start Caddy again, then press "Try again" (do not switch tabs).
@@ -62,3 +62,11 @@ Test G - card text for a short key (repeat of test E, second attempt)
 Run: set NOTIFIER_SIGNING_KEY to a short value in the private .env (keep .env closed in the capture; remember the first line wins, so comment the real key out), php artisan config:clear, restart php artisan serve, reset demo data, reminders:run, queue:work. Then open the approver's Manual handling list.
 Prediction: the 3 cards show "Attempts: 1" and "Last error: Signing is not configured correctly." Afterwards restore the real key and check the length, not the value.
 Capture: the Manual handling list with the card text (no .env visible).
+
+==================== ACTUAL RESULTS OF THE OPTIONAL RE-RUNS (2026-11-05) ====================
+Predictions above were committed in 0e7b4b4 before these runs (the timestamp blank in the addendum was left empty on purpose; the commit proves the order).
+
+Test F - "Try again" recovery: ACTUAL matches the prediction. Before Caddy was stopped the Overdue tab showed "Nothing overdue" (7:44 PM). With Caddy stopped the tab showed "Cannot reach the server" with a "Try again" button (7:45 PM). Pressing "Try again" with Caddy still stopped gave the same error again. After Caddy was started again, pressing "Try again" (no tab switch, no reload, no logout) loaded the list ("Nothing overdue" because no data is overdue). Setup note: before the test, login showed "The server had a problem. Try again in a moment." because MySQL was not started; starting MySQL fixed it.
+
+Test G - card text for a short key: ACTUAL matches the prediction. The Manual handling list (7:51 PM and 7:52 PM) shows 3 cards (Laptop Cart 1 EQ-003, Projector B EQ-002, Projector A EQ-001), each "Needs a person", "Attempts: 1" and "Last error: Signing is not configured correctly." No .env content is visible in the captures. The first attempt of this test (earlier, test E) was a non-result; this run applied the short key. Setup note: the first command attempt failed only because `reminders:run` was typed without `php artisan`; nothing ran.
+

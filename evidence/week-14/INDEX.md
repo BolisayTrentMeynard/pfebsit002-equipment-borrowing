@@ -44,7 +44,10 @@ File names are the ones to use when saving to Drive. Sorting and renaming is don
 | `week14-testB-worker-and-log.png` | Worker output and `sent_signed` / `delivered_signed` lines | AC-23 |
 | `week14-testC-worker-and-log.png`, `week14-testC-manual-handling.png` | Caddy stopped: attempts and Manual handling list | AC-22 |
 | `week14-testD-login-variant.png`, `week14-testD-overdue-error.png`, `week14-testD-after-recovery.png` | Network-error states and recovery | AC-22 |
+| `week14-testF-before-caddy-stopped.png`, `week14-testF-error-try-again.png`, `week14-testF-list-after-try-again.png` | "Try again" recovery: working, error with Caddy stopped, list after "Try again" | AC-22 |
+| `week14-extra-login-server-error.png` | Login screen "The server had a problem" (MySQL not started): the app's server-error state. Extra, not tied to a criterion | none |
 | `week14-testE-worker-and-log.png` | Short key: permanent failure and needs_human lines | AC-19 |
+| `week14-testG-manual-handling-cards-1.png`, `-2.png` | Short key: 3 cards with "Attempts: 1" and "Last error: Signing is not configured correctly." | AC-19 |
 | `week14-ac20-log-search.png` | Key length and key search in `laravel.log` (`False`), search for `X-Message-Signature`, `Bearer`, `password` (`False`) | AC-20 |
 | `week14-ac24-secret-scan.png` | `git ls-files` check (nothing tracked) and history counts for the key and `APP_KEY` (0 and 0) | AC-24 |
 
@@ -52,8 +55,6 @@ Check before uploading or keeping a capture: no `.env` content, no key, no `Auth
 
 ## Known gaps (details in the test matrix)
 - AC-20 and AC-24 are Pass. The scans cover this repository's history and the log as of 2026-11-05; rerun them after Week 15.
-- AC-22: pressing "Try again" after recovery was not shown (recovery was shown by a tab switch).
-- AC-19: the app card text "Signing is not configured correctly." was not captured.
 - Local development certificate only (R1); sender and receiver run on the same machine.
 - Activities 1 and 2 are written, although the instructor said on 2026-10-29 that they are not required.
-- Optional re-runs F ("Try again" recovery) and G (card text for a short key): predictions are in the addendum of `week14-failure-predictions.txt`; results are added after the runs.
+- Optional re-runs F and G are done and matched their predictions (addendum and results in `week14-failure-predictions.txt`).

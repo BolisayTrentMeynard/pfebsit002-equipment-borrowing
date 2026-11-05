@@ -1,6 +1,6 @@
 # Week 14 Evidence Index: Secure Data Exchange and Encryption
 
-Status (2026-11-05): design, code, manual tests and evidence round done. Committed state to be confirmed by the developer. All ten criteria are Pass in the test matrix. Raw captures (screenshots, terminal output) are kept on Google Drive and listed below.
+Status (2026-11-05): Done. `week-14-security` was merged into `main` (fast-forward) and tagged `week-14` at the "Week 14: mark as done" commit (`8992955`). All ten criteria are Pass in the test matrix. Open: Drive upload and folder link (below). Raw captures (screenshots, terminal output) are kept on Google Drive and listed below.
 
 ## Design (Part 1)
 | File | What it is |
@@ -54,7 +54,8 @@ File names are the ones to use when saving to Drive. Sorting and renaming is don
 Check before uploading or keeping a capture: no `.env` content, no key, no `Authorization` value, no token. The first key was visible in one screenshot and was regenerated; do not keep that screenshot in the shared folder.
 
 ## Known gaps (details in the test matrix)
-- AC-20 and AC-24 are Pass. The scans cover this repository's history and the log as of 2026-11-05; rerun them after Week 15.
+- The Drive folder link is not added yet (Week 13's index has one).
+- AC-20 and AC-24 are Pass. The history scan was rerun with a positive control (`NOTIFIER_SIGNING_KEY` found, current signing key and `APP_KEY` clean). The scans cover this repository's history and the log as of 2026-11-05; rerun them after Week 15.
 - Local development certificate only (R1); sender and receiver run on the same machine.
 - Activities 1 and 2 are written, although the instructor said on 2026-10-29 that they are not required.
 - Optional re-runs F and G are done and matched their predictions (addendum and results in `week14-failure-predictions.txt`).

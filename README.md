@@ -80,10 +80,10 @@ php artisan notifier:generate-key          (prints a random key; paste it, never
 NOTIFIER_DRIVER=signed_http
 NOTIFIER_SIGNING_KEY=<the key>
 NOTIFIER_URL=https://localhost:8443/api/notifier/receive
-NOTIFIER_CA_BUNDLE=<path to Caddy's root.crt>   (see .env.example)
+NOTIFIER_CA_BUNDLE='<path to the root.crt file Caddy made>'   (single quotes, see .env.example)
 ```
 
-Then run `php artisan config:clear`, keep `php artisan serve` and Caddy running, and try `php artisan notifier:tamper-demo` (sends valid, altered, expired, replayed and wrongly signed messages and shows how the receiver answers). Design and evidence notes: `evidence/week-14/`.
+Each name must appear only once in `.env` (if repeated, the first line wins). Then run `php artisan config:clear`, restart `php artisan serve`, keep Caddy running, and try `php artisan notifier:tamper-demo` (sends valid, altered, expired, replayed and wrongly signed messages and shows how the receiver answers). Design and evidence notes: `evidence/week-14/`.
 
 Reminder automation demo (from `backend/`, in a third terminal):
 

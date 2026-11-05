@@ -2,7 +2,7 @@ Week 14 - Failure Test Predictions (to be committed BEFORE running the tests)
 
 Student: Bolisay Trent Meynard, BSIT 3A
 Project: #5 Equipment Borrowing Reminder System
-Date drafted: 2026-11-05 (by Claude, from the code). Developer: write the time you commit this file here: ____________
+Date drafted: 2026-11-05 (by Claude, from the code). Committed at 4:37 PM on 2026-11-05 (per developer), before the runs below (4:45 PM onward)
 Environment: Windows PC, PHP 8.2, Laravel 12, MySQL (XAMPP), Caddy on https://localhost:8443
 Prerequisites: NOTIFIER_DRIVER=signed_http, key set in .env, NOTIFIER_URL and NOTIFIER_CA_BUNDLE set, php artisan config:clear, artisan serve and Caddy running.
 
@@ -33,3 +33,19 @@ Test E - key too short (set NOTIFIER_SIGNING_KEY=short, config:clear, run Test B
 Prediction: the sender refuses to sign, so no request leaves the worker; each notification goes straight to FAILED_NEEDS_HUMAN after 1 attempt with last_error "Signing is not configured correctly."; restore the real key afterwards.
 
 After each test, write the actual result next to the prediction. Failures stay in the record.
+
+
+==================== ACTUAL RESULTS (added in the evidence round, 2026-11-05) ====================
+Source: the developer's terminal and screenshots, shown in the chat. Claude did not run any code.
+
+Test A - tamper demo: ACTUAL 202, 401, 401, 409, 401, 400, all rows PASS (matches). The log has 5 notifier.message_rejected lines (bad_signature, expired, replayed, bad_signature, malformed) with ids only (matches). Exit code was not recorded.
+
+Test B - end to end with signed_http: ACTUAL migrate:fresh --seed, DemoScenarioSeeder, reminders:run queued 3, queue:work. 3 jobs done once each. The log shows notifier.sent_signed and notifier.delivered_signed with the same message_id, and reminder.sent with attempts 1 SENT (matches). Manual-handling list empty (not captured separately).
+
+Test C - Caddy stopped while the worker sends: ACTUAL 9 reminder.attempt_failed lines (attempts 1 to 3 for each of 3 items), then 3 reminder.needs_human lines (attempts 3). The app's Manual handling list showed the 3 items with "Attempts: 3" and "Last error: Receiver not reachable." (matches). The failed_jobs count was not recorded.
+
+Test D - Caddy stopped while the app is open: PARTLY DIFFERENT.
+  Run 1: the app showed the login screen ("Could not reach the server...", two login requests failed with ERR_CONNECTION_REFUSED). Reason: the browser was reloaded, which drops the in-memory token. Not the predicted screen.
+  Run 2: on the Overdue tab the app showed "Cannot reach the server" with a "Try again" button (matches). After Caddy was started again, the Manual handling list loaded, but recovery was shown by switching tabs, not by pressing "Try again" (deviation from the prediction).
+
+Test E - key too short: first attempt did NOT apply the change (the .env edit was not saved, the real key was used, all 3 SENT). Recorded as a non-result. Second attempt: each job failed once, 3 reminder.permanent_failure lines (attempt 1) and 3 reminder.needs_human lines (attempts 1) (matches). The text "Signing is not configured correctly." in the app's Manual handling cards was not captured.

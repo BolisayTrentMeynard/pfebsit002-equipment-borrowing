@@ -18,7 +18,7 @@ Limits used in the demo: loan of 7 days, at most 3 reminders and 2 escalations p
 | Week | Tag | What was added | Status |
 |------|-----|----------------|--------|
 | 13 | `week-13` | Backend API with roles and audit log, reminder automation (scheduler, queue, bounded retries, manual handling), Flutter screens for all roles | Done |
-| 14 | `week-14` | Secure data exchange and encryption | Not started |
+| 14 | `week-14` | HTTPS in front of the API, signed (HMAC-SHA256) notifier messages that reject altered, expired and replayed messages, keys kept in `.env` | In progress |
 | 15 | `week-15` | Integration testing and security hardening | Not started |
 | 16 | `week-16` | Performance, reliability and deployment | Not started |
 | 17 | `week-17` | Final integration, UAT and evaluation | Not started |
@@ -51,14 +51,39 @@ php artisan migrate:fresh --seed
 php artisan serve
 ```
 
-The API runs at http://127.0.0.1:8000. The demo accounts (borrower, approver, staff) are fake and are created by `backend/database/seeders/DatabaseSeeder.php`.
+The API runs at http://127.0.0.1:8000 (and, with Caddy running, at https://localhost:8443; see "HTTPS and signed messages" below). The demo accounts (borrower, approver, staff) are fake and are created by `backend/database/seeders/DatabaseSeeder.php`.
 
-Flutter Web app (from `app/`, in a second terminal):
+Flutter Web app (from `app/`, in a second terminal). Since Week 14 the app talks to `https://localhost:8443/api` by default, so start Caddy first (next section). To use the plain server instead:
 
 ```
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome --web-port 9595
+flutter run -d chrome --web-port 9595 --dart-define=API_BASE_URL=http://127.0.0.1:8000/api
 ```
+
+The first command uses the HTTPS default, the second one the plain HTTP address.
+
+### HTTPS and signed messages (Week 14)
+
+HTTPS locally: install Caddy (`winget install CaddyServer.Caddy`), then in its own PowerShell window run
+
+```
+caddy reverse-proxy --from localhost:8443 --to 127.0.0.1:8000 --disable-redirects
+```
+
+Caddy makes its own local certificate authority and adds it to Windows trust the first time. This is a development certificate, not a production one. Restart Chrome once after the first start.
+
+Signed notifier messages are off by default (`NOTIFIER_DRIVER=fake`, the Week 13 behaviour). To turn them on, in `backend/.env`:
+
+```
+php artisan notifier:generate-key          (prints a random key; paste it, never commit it)
+NOTIFIER_DRIVER=signed_http
+NOTIFIER_SIGNING_KEY=<the key>
+NOTIFIER_URL=https://localhost:8443/api/notifier/receive
+NOTIFIER_CA_BUNDLE=<path to Caddy's root.crt>   (see .env.example)
+```
+
+Then run `php artisan config:clear`, keep `php artisan serve` and Caddy running, and try `php artisan notifier:tamper-demo` (sends valid, altered, expired, replayed and wrongly signed messages and shows how the receiver answers). Design and evidence notes: `evidence/week-14/`.
 
 Reminder automation demo (from `backend/`, in a third terminal):
 

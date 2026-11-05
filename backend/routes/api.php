@@ -5,10 +5,14 @@ use App\Http\Controllers\Api\BorrowRequestController;
 use App\Http\Controllers\Api\CustodyController;
 use App\Http\Controllers\Api\EquipmentController;
 use App\Http\Controllers\Api\ManualHandlingController;
+use App\Http\Controllers\Api\NotifierReceiverController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+
+// Receiver of signed notifier messages: authenticated by the message signature, not by a user token.
+Route::post('/notifier/receive', [NotifierReceiverController::class, 'receive'])->middleware('throttle:60,1');
 
 Route::middleware('api.auth')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);

@@ -1,0 +1,24 @@
+flowchart TB
+    subgraph Browser["Trust zone 1: user's browser"]
+        App["Flutter Web app<br/>token in memory only"]
+    end
+    subgraph Local["Trust zone 2: backend machine"]
+        Caddy["Caddy<br/>HTTPS 8443, local CA"]
+        API["Laravel API<br/>login, roles, validation"]
+        Worker["Queue worker<br/>SignedHttpNotifier"]
+        Recv["Receiver<br/>/api/notifier/receive"]
+        DB[("MySQL<br/>hashed tokens, audit log")]
+        Env[/".env<br/>NOTIFIER_SIGNING_KEY<br/>(secret, not in repo)"/]
+        Log[/"laravel.log<br/>ids only"/]
+    end
+    App -- "F1 HTTPS: credentials, Bearer token, requests" --> Caddy
+    Caddy -- "F2 plain HTTP on this machine only" --> API
+    API <-- "F3 queries" --> DB
+    API -- "F4 queue job (ids)" --> DB
+    DB -- "F4 job" --> Worker
+    Env -. "key read at start" .-> Worker
+    Env -. "key read at start" .-> Recv
+    Worker -- "F5 HTTPS: signed message<br/>id + timestamp + HMAC" --> Caddy
+    Caddy -- "F6 forwards" --> Recv
+    Recv -- "F7 reject reason + ids" --> Log
+    API -- "F8 safe log lines" --> Log

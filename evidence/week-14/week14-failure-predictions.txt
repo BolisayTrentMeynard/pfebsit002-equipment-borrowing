@@ -1,0 +1,35 @@
+Week 14 - Failure Test Predictions (to be committed BEFORE running the tests)
+
+Student: Bolisay Trent Meynard, BSIT 3A
+Project: #5 Equipment Borrowing Reminder System
+Date drafted: 2026-11-05 (by Claude, from the code). Developer: write the time you commit this file here: ____________
+Environment: Windows PC, PHP 8.2, Laravel 12, MySQL (XAMPP), Caddy on https://localhost:8443
+Prerequisites: NOTIFIER_DRIVER=signed_http, key set in .env, NOTIFIER_URL and NOTIFIER_CA_BUNDLE set, php artisan config:clear, artisan serve and Caddy running.
+
+Test A - php artisan notifier:tamper-demo
+Prediction (status codes):
+ 1 valid message ........................ 202
+ 2 body altered after signing ........... 401 (reason bad_signature)
+ 3 expired (signed 10 minutes ago) ...... 401 (reason expired)
+ 4a replay, first send .................. 202 (not shown in the table)
+ 4b replay, same message again .......... 409 (reason replayed)
+ 5 signed with a different key .......... 401 (reason bad_signature)
+ 6 no signature headers ................. 400 (reason malformed)
+Command result: every row PASS, exit code 0.
+Log prediction: five notifier.message_rejected warning lines, one each for cases 2 (bad_signature), 3 (expired), 4b (replayed), 5 (bad_signature) and 6 (malformed); none contains the key, a signature or the body.
+
+Test B - end to end with signed_http (Caddy running)
+Run: db:seed --class=DemoScenarioSeeder, reminders:run, queue:work (about 20 seconds).
+Prediction: 3 notifications, all SENT with attempts 1 (the Week 13 failure switches do not apply to this notifier). For each, laravel.log has notifier.sent_signed and notifier.delivered_signed with the same message_id. Manual-handling list is empty.
+
+Test C - Caddy stopped while the worker sends
+Run: stop Caddy, reset demo data, reminders:run, queue:work for about 40 seconds.
+Prediction: each of the 3 notifications makes exactly 3 attempts (waits 5 s and 15 s), last_error "Receiver not reachable.", final status FAILED_NEEDS_HUMAN, log lines reminder.attempt_failed (3 per item, one for each failed attempt) and reminder.needs_human (1 per item), 3 rows in failed_jobs, and the 3 items appear in the approver's manual-handling list. Nothing is retried forever.
+
+Test D - Caddy stopped while the Flutter app is open
+Prediction: after pressing Refresh the app shows its network-error message (not a blank page or a crash) with a "Try again" button; after Caddy is started again and "Try again" is pressed, the list loads.
+
+Test E - key too short (set NOTIFIER_SIGNING_KEY=short, config:clear, run Test B)
+Prediction: the sender refuses to sign, so no request leaves the worker; each notification goes straight to FAILED_NEEDS_HUMAN after 1 attempt with last_error "Signing is not configured correctly."; restore the real key afterwards.
+
+After each test, write the actual result next to the prediction. Failures stay in the record.

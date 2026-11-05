@@ -4,7 +4,7 @@ Individual finals project for PFEBSIT 002 (Weeks 13-18): a Flutter Web app with 
 
 - **Student:** Bolisay Trent Meynard, BSIT 3A (solo)
 - **Selected project:** #5 Equipment Borrowing Reminder System (backups: #25 Inventory Reorder Alert System, #21 Certificate Generation Queue)
-- **Backend:** Laravel 12 (PHP 8.2), SQLite
+- **Backend:** Laravel 12 (PHP 8.2), MySQL (MariaDB from XAMPP)
 - **Frontend:** Flutter Web
 
 ## What it does
@@ -37,7 +37,9 @@ README.md
 
 ## How to run
 
-You need Flutter (with Chrome), PHP 8.2 or newer, Composer and Git. The steps below worked on the developer's Windows PC with the project already set up; they have not been tested from a fresh clone.
+You need Flutter (with Chrome), PHP 8.2 or newer, Composer, Git and MySQL (the XAMPP one works; start MySQL in the XAMPP Control Panel). The steps below worked on the developer's Windows PC with the project already set up; they have not been tested from a fresh clone.
+
+Create two empty databases once (phpMyAdmin at http://localhost/phpmyadmin, or the `mysql` client): `equipment_borrowing` for the app and `equipment_borrowing_test` for `php artisan test`.
 
 Backend (from `backend/`):
 

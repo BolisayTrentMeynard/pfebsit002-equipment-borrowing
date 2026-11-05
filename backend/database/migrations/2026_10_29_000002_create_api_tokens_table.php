@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('token_hash', 64)->unique(); // sha256 of the token; the plain token is never stored
-            $table->timestamp('expires_at');
+            $table->dateTime('expires_at');
             $table->timestamp('last_used_at')->nullable();
             $table->timestamps();
         });

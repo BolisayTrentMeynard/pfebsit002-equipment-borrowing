@@ -10,6 +10,9 @@ Status (2026-11-05): design, code, manual tests and evidence round done. Committ
 | [`protection-requirements-matrix.md`](protection-requirements-matrix.md) | Data, protection need, threat, control |
 | [`decision-record-003-message-protection.md`](decision-record-003-message-protection.md) | HTTPS only vs HMAC vs authenticated encryption |
 | [`key-lifecycle-plan.md`](key-lifecycle-plan.md) | Generate, store, use, rotate, revoke |
+| [`decision-record-004-database-mysql.md`](decision-record-004-database-mysql.md) | Database changed from SQLite to MySQL (instructor requirement) |
+| [`activity-1-review-of-hashing-and-encryption.md`](activity-1-review-of-hashing-and-encryption.md) | Activity 1: five uses of hashing or encryption reviewed |
+| [`activity-2-secure-exchange-review.md`](activity-2-secure-exchange-review.md) | Activity 2: secure-exchange review (source, config, transport, tamper, secret scan, residual risk) |
 | [`acceptance-criteria.md`](acceptance-criteria.md) | AC-15 to AC-24 |
 | [`test-data-plan.md`](test-data-plan.md) | Fake data, keys and capture hygiene |
 | [`week14-failure-predictions.txt`](week14-failure-predictions.txt) | Predictions to commit before running the failure tests |
@@ -52,4 +55,5 @@ Check before uploading or keeping a capture: no `.env` content, no key, no `Auth
 - AC-22: pressing "Try again" after recovery was not shown (recovery was shown by a tab switch).
 - AC-19: the app card text "Signing is not configured correctly." was not captured.
 - Local development certificate only (R1); sender and receiver run on the same machine.
-- Week 14 Activities 1 and 2 are not written. The instructor said on 2026-10-29 that the module's Activities are not required.
+- Activities 1 and 2 are written, although the instructor said on 2026-10-29 that they are not required.
+- Optional re-runs F ("Try again" recovery) and G (card text for a short key): predictions are in the addendum of `week14-failure-predictions.txt`; results are added after the runs.

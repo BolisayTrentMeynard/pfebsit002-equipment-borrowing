@@ -49,3 +49,16 @@ Test D - Caddy stopped while the app is open: PARTLY DIFFERENT.
   Run 2: on the Overdue tab the app showed "Cannot reach the server" with a "Try again" button (matches). After Caddy was started again, the Manual handling list loaded, but recovery was shown by switching tabs, not by pressing "Try again" (deviation from the prediction).
 
 Test E - key too short: first attempt did NOT apply the change (the .env edit was not saved, the real key was used, all 3 SENT). Recorded as a non-result. Second attempt: each job failed once, 3 reminder.permanent_failure lines (attempt 1) and 3 reminder.needs_human lines (attempts 1) (matches). The text "Signing is not configured correctly." in the app's Manual handling cards was not captured.
+
+==================== ADDENDUM: optional re-runs (written 2026-11-05, BEFORE running) ====================
+Developer: write the time you commit this addendum here: 7:36 PM on 2026-11-05 (commit it before you run tests F and G)
+
+Test F - "Try again" recovery (repeat of test D, second run)
+Run: log in as approver, open the Overdue tab, stop Caddy, press Refresh or switch tab until the error shows, start Caddy again, then press "Try again" (do not switch tabs).
+Prediction: before Caddy returns, the tab shows "Cannot reach the server" with a "Try again" button. Pressing "Try again" while Caddy is still stopped shows the same error again. After Caddy is back, pressing "Try again" loads the list, without a reload and without logging out.
+Capture: the error screen, and the list after pressing "Try again".
+
+Test G - card text for a short key (repeat of test E, second attempt)
+Run: set NOTIFIER_SIGNING_KEY to a short value in the private .env (keep .env closed in the capture; remember the first line wins, so comment the real key out), php artisan config:clear, restart php artisan serve, reset demo data, reminders:run, queue:work. Then open the approver's Manual handling list.
+Prediction: the 3 cards show "Attempts: 1" and "Last error: Signing is not configured correctly." Afterwards restore the real key and check the length, not the value.
+Capture: the Manual handling list with the card text (no .env visible).

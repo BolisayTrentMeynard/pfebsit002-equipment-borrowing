@@ -1,0 +1,46 @@
+Week 15 - Failure Test Predictions (to be committed BEFORE running the tests)
+
+Student: Bolisay Trent Meynard, BSIT 3A
+Project: #5 Equipment Borrowing Reminder System
+Date drafted: 2026-11-10 (by Claude, from reading the code; nothing has been run). Developer: note the commit time here after committing: ____
+Environment: Windows PC, PHP 8.2, Laravel 12, MySQL (XAMPP), Caddy on https://localhost:8443
+Rule: predictions for chunks 2, 3 and 5 are added to this file BEFORE those chunks are run. Actual results are added underneath later. Failures stay in the record.
+
+Chunk 1 - Baseline collection (current code, nothing fixed yet)
+Prediction per weakness candidate (read from code):
+ W1 Login throttle .......... The 11th login attempt within one minute from this PC gets 429 (per-IP limit). Failed attempts 6 to 10 for the SAME email still get 401, so there is no per-account limit. Predicted result: weakness confirmed.
+ W2 X-Powered-By ............ Every response carries "X-Powered-By: PHP/8.2.12" (already seen in the Week 14 DevTools capture). Weakness confirmed.
+ W3 Security headers ........ Responses have no X-Content-Type-Options, no Referrer-Policy, and Cache-Control does not contain "no-store" (Laravel's default is "no-cache, private"). Weakness confirmed.
+ W4 Response fields ......... GET /api/requests/{id} as a borrower includes audit_logs rows with user_id and correlation_id. GET /api/manual-handling (approver) includes recipient name and role. Weakness probable; decided from the real JSON.
+ W6 Object-level denial ..... A borrower opening another borrower's request gets 403 and the message "You can only view your own requests.", but no log line is written for it (the role check logs auth.forbidden, this one does not). Weakness confirmed if the log has no line for it.
+ W5 Double submit ........... Not tested by the collection (not reproducible on a single-threaded dev server). Listed as backlog.
+
+Prediction per status (all other cases should already behave correctly):
+ Normal lifecycle (submit, approve, release, return good) ........ 201, 200, 200, 200; final status CLOSED
+ Missing fields, wrong types, days 0 or 8, reason 2 or 256 chars .. 422 with field errors, nothing saved
+ Days 1 and 7, reason 3 and 255 chars ............................. 201
+ No token, made-up token, expired token ............................ 401 {"message":"Unauthenticated."} each time
+ Borrower approve or release; staff approve; borrower manual-handling .. 403
+ Request id 99999, id "abc", unknown route ......................... 404 JSON, no stack trace, no file path
+ Second open request for the same item ............................. 422 "You already have an open request for this equipment."
+ Approve the same request twice .................................... 409
+ Replay of a signed message (cross-reference) ...................... 202 then 409
+ Expected baseline outcome: most cases pass; defects expected for W1, W2, W3, W6 and probably W4.
+
+Chunk 2 - Tests first (new tests only, before the fix)
+Prediction: the new throttle test (W1) FAILS (the 6th failed login for one email still returns 401, not 429), and the new header test (W3) FAILS (no nosniff, no no-store). The new expired-token test PASSES (the code already rejects expired tokens; it only had no test). After the fix zip, all new tests pass and the existing suite still passes (count recorded then).
+
+Chunk 4 - Adverse tests
+Test A - Expired token while the app is open
+Run: sign in as a borrower, set that token's expires_at to a past time in the database (tinker), then press Refresh or open a tab in the app.
+Prediction: the API answers 401, the app clears the session and returns to the login screen with the banner "Your session expired. Please sign in again." No crash, no blank page, no data from the old session shown. Logging in again works.
+
+Test B - Caddy stopped during a collection run
+Run: start the collection over https://localhost:8443/api, stop Caddy part-way, let the run finish, start Caddy, rerun.
+Prediction: requests after the stop fail with a connection error in Postman (no status code) and their tests are marked failed; no data is changed by those requests and the API process stays healthy. After Caddy starts and the data is reset, the rerun passes as before.
+
+Test C - Login lockout seen in the app (after the W1 fix)
+Run: in the app, submit a wrong password 6 times for the same email within a minute.
+Prediction: attempts 1 to 5 show "Invalid credentials."; the 6th shows "Too many attempts. Wait a minute and try again."; after about a minute the correct password works; a different email is not blocked in the meantime. The log has a throttle line without the email or password.
+
+Chunk 3 and 5 predictions are added here before those chunks run.

@@ -9,8 +9,8 @@
 | Frontend | Flutter Web, run in Chrome |
 | HTTPS | Caddy v2.11.8, `https://localhost:8443` in front of `http://127.0.0.1:8000` |
 | API test tool | Postman (desktop app, installed by the developer) |
-| Flutter version | _developer: paste the first line of `flutter --version`_ |
-| Postman version | _developer: Help > About_ |
+| Flutter version | Flutter 3.47.8 (stable), Dart 3.13.7, DevTools 2.60.0 (per developer's `flutter --version` screenshot) |
+| Postman version | 12.30.4 (per the release-notes tab in the developer's screenshot) |
 | Chrome version | _developer: chrome://version_ |
 | Git | 2.55.0.windows.3 |
 | OS | Windows (developer PC) |
@@ -21,3 +21,4 @@ Note: the registry approval covers the project title only. It does not allow rea
 ## Entries
 
 - 2026-11-10: Plan approved by the developer. Part 1 documents written (scope, diagram, acceptance criteria AC-25 to AC-38, traceability matrix v1, decision record DR-005, test data plan, failure predictions). Nothing built or run yet. Every result column in the matrix says "Planned".
+- 2026-11-10: Branch `week-15-hardening` created. Failure predictions committed alone as `fbf4159` at 15:09:32 +0800 (per developer's terminal output), before any test run.

@@ -2,7 +2,7 @@ Week 15 - Failure Test Predictions (to be committed BEFORE running the tests)
 
 Student: Bolisay Trent Meynard, BSIT 3A
 Project: #5 Equipment Borrowing Reminder System
-Date drafted: 2026-11-10 (by Claude, from reading the code; nothing has been run). Developer: note the commit time here after committing: ____
+Date drafted: 2026-11-10 (by Claude, from reading the code; nothing has been run). Committed as fbf4159 at 15:09:32 +0800 on 2026-11-10 (per developer's terminal output), before any test run. (This line was added in a later commit; the predictions below are unchanged.)
 Environment: Windows PC, PHP 8.2, Laravel 12, MySQL (XAMPP), Caddy on https://localhost:8443
 Rule: predictions for chunks 2, 3 and 5 are added to this file BEFORE those chunks are run. Actual results are added underneath later. Failures stay in the record.
 

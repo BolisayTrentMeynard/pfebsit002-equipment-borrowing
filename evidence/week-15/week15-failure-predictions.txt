@@ -105,3 +105,18 @@ Prediction C: manual check of W2 after the fix (developer capture, restart php a
 
 Prediction D: curl header check on the fixed code
   GET /api/me with a token: X-Content-Type-Options: nosniff, Referrer-Policy: no-referrer, Cache-Control contains no-store, X-Correlation-ID present.
+
+==========================================================================================
+Chunk 3 ADDENDUM (drafted 2026-11-10 by Claude BEFORE the new Flutter tests are run; nothing has been run,
+Claude has no Flutter in its sandbox. The commit time of this addendum is the developer's record.
+Commit this file alone, before running the tests.)
+==========================================================================================
+Scope of chunk 3: Flutter state tests for AC-34, AC-35 and AC-36. The app code is NOT changed. The new file app/test/states_test.dart has 10 tests.
+
+Correction to an earlier note: the app ALREADY shows "Too many attempts. Wait a minute and try again." for a login 429 (api_client.dart has a 429 branch and the login screen shows the message). Chunk 3 therefore needs no app change for it. The chunk 2 hand-over said the app "has to" show it; that was wrong.
+
+Prediction A: flutter test (in app/)
+  Expected: 15 tests, all passed (5 old + 10 new). The new tests describe behavior the app code already has, so I predict they pass.
+  The tests: 403 detail ("Not allowed" and the plain message, still signed in); 401 back to login with "Your session expired. Please sign in again." and the token cleared; 422 message under the field; 429 on login; 500 shows only "The server had a problem. Try again in a moment." (no SQLSTATE, no table name); network error with "Try again" that recovers; 15 s timeout shows "took too long"; login and new-request form at 1280x800 and at 360x640 with no layout error; form limits (reason 2 refused, 3 accepted, days 0 and 8 refused, 1 and 7 accepted, 256 characters cannot be typed).
+  Where I am least sure (a failure here may be the TEST, not the app, and will be recorded as such): picking the equipment in the dropdown (422 test), the 15-second timeout test (fake clock), "Refresh" being a single button on the empty list (401 test), the "New request" button text at 360 px width.
+  If a test fails because the app really behaves differently, that is a finding and becomes DEF-08 and up; I will not change the test to hide it.

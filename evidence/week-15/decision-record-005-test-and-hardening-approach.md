@@ -47,3 +47,6 @@ At least three of W1, W2, W3, W4 and W6 are fixed. Defects found by the baseline
 
 ## Review condition
 Revisit if the API routes change, if the project moves to a deployed server (Week 16), or if a fix breaks a baseline case.
+
+## Update after the baseline (2026-11-10, chunk 1)
+The decision above is not changed. The baseline run (`baseline-results.md`) confirmed W1, W2, W3, W4 and W6, and added W7 (404 message names an internal class) and W8 (`1abc` accepted as id 1), both found by reading the code while writing the collection. Defects are DEF-01 to DEF-07. W4 is justified: the Flutter history list uses only `created_at`, `action`, `from_status` and `to_status`, so `user_id` and `correlation_id` are not needed by any screen. W5 stays as backlog. Fix order for chunk 2 (proposal, developer approves first): DEF-01, DEF-03 (tests first), DEF-02, DEF-04, then DEF-07, DEF-05 and DEF-06 if time allows; no new routes or features.

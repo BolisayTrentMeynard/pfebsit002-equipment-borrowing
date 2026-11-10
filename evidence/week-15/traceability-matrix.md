@@ -1,6 +1,6 @@
-# Traceability Matrix v1 (Week 15, written 2026-11-10 before any test run)
+# Traceability Matrix v2 (Week 15; v1 written 2026-11-10 before any test run, baseline results added after chunk 1)
 
-Every requirement or control is linked to the tests that check it. Nothing here is a result: the Result column says "Planned" or points to the earlier week's matrix. Test IDs `P-nn` (Postman) are assigned when the collection is written in chunk 1; until then the column names the folder and the planned case.
+Every requirement or control is linked to the tests that check it. Parts A to C are unchanged from v1 (the Result column still says "Planned" or points to the earlier week's matrix). Part E adds the baseline result of the counted run; it records what the unmodified code did, not a pass of the criterion. Test IDs `P-nn` (Postman) are assigned when the collection is written in chunk 1; until then the column names the folder and the planned case.
 
 Layers: **P** = Postman collection, **U** = PHPUnit (`php artisan test`), **F** = Flutter widget test (`flutter test`), **M** = manual browser or terminal check.
 
@@ -36,3 +36,40 @@ Layers: **P** = Postman collection, **U** = PHPUnit (`php artisan test`), **F** 
 
 ## Part C: Weakness candidates to test
 W1 to W6 are listed with priorities in `decision-record-005-test-and-hardening-approach.md`. They are confirmed or disproved by the baseline run, and each confirmed one becomes a defect (DEF-nn) with a cause, a fix, a retest and a regression result.
+
+## Part D: Postman test IDs (added in chunk 1, 2026-11-10; results are in Part E)
+Collection: `postman/equipment-borrowing-week15.postman_collection.json`. Setup requests S-1 to S-6 are not numbered tests.
+
+| Folder | Test IDs | Criteria |
+|--------|----------|----------|
+| 01 Normal | P-01 to P-08 | AC-01 to AC-04, AC-25 |
+| 02 Invalid input | P-09 to P-15 | AC-26 |
+| 03 Boundary | P-16 to P-24 | AC-26 |
+| 04 Unauthorized | P-25 to P-29 | AC-27 |
+| 05 Forbidden | P-30 to P-36 (P-35 is the W6 object-level case) | AC-28 |
+| 06 Not found | P-37 to P-41 (P-37 W7, P-41 W8) | AC-29 |
+| 07 Duplicate and conflict | P-42 to P-46 | AC-06, AC-30 |
+| 08 Security checks | P-47, P-48 (W2, W3), P-49, P-50 (W4), P-51, P-52 (receiver) | AC-32, AC-33, AC-30 |
+| 09 Logout | P-53, P-54 | AC-27 |
+| 10 Rate limit | P-55 to P-65 (P-60 W1) | AC-31 |
+| 99 Manual | P-66, P-67 (expired token) | AC-27 |
+
+Part B said "about 33 requests". The collection has 73 requests (S-1 to S-6 and P-01 to P-67) because the lockout needs 11 separate attempts, the boundary pairs need 8 plus checks, and each folder has a state check. Candidates W7 (internal class name in the 404 message) and W8 (an id such as `1abc` accepted) were added from reading the code; they were not in DR-005; the baseline confirmed both.
+
+## Part E: Baseline result (counted run 2026-11-10, 15:58:25, unmodified code; per developer's screenshots)
+Runner: 149 tests, 137 passed, 12 failed, 0 errors. `php artisan test`: 47 passed (127 assertions). `flutter test`: 5 passed. Details per request are in `baseline-results.md`. A "Baseline" of Pass below means the unmodified code already meets the criterion for the cases tested; Fail means a defect was found and a fix is planned.
+
+| Criterion | Tests | Baseline | Defects |
+|-----------|-------|----------|---------|
+| AC-25 Baseline | whole collection | Done: 137 of 149 checks pass | DEF-01 to DEF-07 |
+| AC-26 Invalid and boundary | P-09 to P-24 | Pass (all checks) | none |
+| AC-27 Unauthorized, expired token | P-25 to P-29, P-53, P-54, P-66, P-67 | Pass; expired token returns 401 and is logged without the token | none |
+| AC-28 Forbidden | P-30 to P-36 | Pass for status; W6: the object-level 403 (P-35) leaves no log line | DEF-07 |
+| AC-29 Not found | P-37 to P-41 | Fail: W7 message names a class, W8 `1abc` returns 200 | DEF-05, DEF-06 |
+| AC-30 Duplicate and conflict | P-42 to P-46, P-51, P-52 | Pass | none |
+| AC-31 Rate limit | P-55 to P-65 | Fail: no per-email limit (P-60); per-IP limit works (P-65 429) | DEF-01 |
+| AC-32 Headers | P-47, P-48 | Fail: `X-Powered-By`, no `nosniff`, no `Referrer-Policy`, no `no-store` | DEF-02, DEF-03 |
+| AC-33 Data minimization | P-49, P-50 | Fail: borrower sees `user_id` and `correlation_id` in audit rows; P-50 is an empty list on fresh data (recipient fields not reviewed) | DEF-04 |
+| AC-34 to AC-36 | PHPUnit, widget tests, manual | Not run yet (chunks 3 and 4) | |
+| AC-37 Regression | rerun in chunk 5 | Baseline counts recorded above | |
+| AC-38 Secrets | scans in chunk 5 | Not run yet | |

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\BorrowWorkflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -42,7 +43,15 @@ class BorrowRequestController extends Controller
     {
         $this->authorizeView($request->user(), $borrowRequest);
 
-        return response()->json(['data' => $borrowRequest->load(['equipment:id,name,asset_tag', 'borrower:id,name', 'auditLogs'])]);
+        $borrowRequest->load(['equipment:id,name,asset_tag', 'borrower:id,name', 'auditLogs']);
+
+        // Week 15 hardening (DEF-04): the history shows what happened and when, not who (user ids)
+        // and not log correlation ids. Only these four fields leave the server.
+        $borrowRequest->auditLogs->each(
+            fn ($log) => $log->setVisible(['action', 'from_status', 'to_status', 'created_at'])
+        );
+
+        return response()->json(['data' => $borrowRequest]);
     }
 
     public function store(Request $request): JsonResponse
@@ -109,6 +118,15 @@ class BorrowRequestController extends Controller
     private function authorizeView(User $user, BorrowRequest $borrowRequest): void
     {
         if ($user->role === User::ROLE_BORROWER && $borrowRequest->user_id !== $user->id) {
+            // Week 15 hardening (DEF-07): ids only, no personal data.
+            Log::warning('auth.forbidden', [
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'reason' => 'not_owner',
+                'request_id' => $borrowRequest->id,
+                'path' => request()->path(),
+            ]);
+
             abort(403, 'You can only view your own requests.');
         }
     }

@@ -215,7 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Center(child: Text('${user.name} (${user.role})')),
+            // DEF-09: the full name and role overflowed the app bar at phone width.
+            child: Center(child: Text(wide ? '${user.name} (${user.role})' : user.role)),
           ),
           IconButton(
             tooltip: 'Sign out',

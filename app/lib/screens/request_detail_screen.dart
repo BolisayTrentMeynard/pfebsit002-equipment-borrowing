@@ -33,7 +33,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _future = _load();
+    _future = _load()..ignore();
   }
 
   Future<Map<String, dynamic>> _load() async {
@@ -47,7 +47,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
   void _reload() {
     setState(() {
-      _future = _load();
+      _future = _load()..ignore();
     });
   }
 
@@ -60,7 +60,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       widget.onChanged();
       setState(() {
         _busy = false;
-        _future = _load();
+        _future = _load()..ignore();
       });
     } catch (e) {
       if (!mounted) return;

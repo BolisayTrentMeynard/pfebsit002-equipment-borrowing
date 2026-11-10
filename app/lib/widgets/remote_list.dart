@@ -33,7 +33,7 @@ class _RemoteListState extends State<RemoteList> {
   @override
   void initState() {
     super.initState();
-    _future = _load();
+    _future = _load()..ignore(); // see DEF-08: no unhandled error when the screen is gone
   }
 
   Future<List<Map<String, dynamic>>> _load() async {
@@ -47,7 +47,7 @@ class _RemoteListState extends State<RemoteList> {
 
   void _reload() {
     setState(() {
-      _future = _load();
+      _future = _load()..ignore();
     });
   }
 

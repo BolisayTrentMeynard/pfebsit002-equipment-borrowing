@@ -34,7 +34,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
   @override
   void initState() {
     super.initState();
-    _equipment = _loadEquipment();
+    _equipment = _loadEquipment()..ignore();
   }
 
   @override
@@ -59,7 +59,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
 
   void _retry() {
     setState(() {
-      _equipment = _loadEquipment();
+      _equipment = _loadEquipment()..ignore();
     });
   }
 

@@ -1,0 +1,29 @@
+flowchart TB
+    subgraph Dev["Trust zone 1: developer PC, tools"]
+        PM["Postman collection<br/>token in a variable only"]
+        FT["flutter test<br/>fake HTTP client"]
+        PU["PHPUnit<br/>Http::fake, test database"]
+    end
+    subgraph Browser["Trust zone 2: user's browser"]
+        App["Flutter Web app<br/>token in memory only"]
+    end
+    subgraph Local["Trust zone 3: backend machine"]
+        Caddy["Caddy<br/>HTTPS 8443, local CA"]
+        API["Laravel API<br/>login, roles, validation<br/>(hardening: throttle, headers)"]
+        Worker["Queue worker<br/>SignedHttpNotifier, 5 s timeout"]
+        Recv["Receiver<br/>/api/notifier/receive"]
+        DB[("MySQL<br/>equipment_borrowing<br/>equipment_borrowing_test")]
+        Log[/"laravel.log<br/>ids only, no secrets"/]
+    end
+    PM -- "T1 requests: normal, invalid, 401, 403, 404, duplicate" --> Caddy
+    App -- "T2 manual checks, desktop and narrow" --> Caddy
+    FT -. "T3 states: 401 403 422 429 500 network" .-> App
+    Caddy -- "plain HTTP, this machine only" --> API
+    API <--> DB
+    API -- "queue job (ids)" --> DB
+    DB --> Worker
+    Worker -- "T4 dependency failure and timeout" --> Caddy
+    Caddy --> Recv
+    PU -. "T5 in-process: expired token, throttle, headers" .-> API
+    API -- "safe log lines" --> Log
+    Human(["Approver<br/>manual handling"]) -- "human approval point" --> API

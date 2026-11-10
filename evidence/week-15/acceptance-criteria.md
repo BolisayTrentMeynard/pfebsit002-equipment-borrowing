@@ -1,0 +1,20 @@
+# Acceptance Criteria (Week 15)
+
+Numbering continues from Week 14 (AC-15 to AC-24). Expected results are written before testing. Actual results go in the test matrix in the evidence round. The values in AC-31 and AC-32 are proposed and are confirmed in the hardening chunk before the fix is built.
+
+| ID | Category | Given / When | Expected result | Checked by |
+|----|----------|--------------|-----------------|------------|
+| AC-25 | Baseline | The full collection runs against the unmodified code | Every request has its expected status written first; actual results, including failures, are recorded as expected vs actual; failures become defects DEF-01 and up | Postman run |
+| AC-26 | Invalid and boundary | Days 0 and 8; reason of 2 and 256 characters; wrong types; missing fields; unknown status filter | HTTP 422 with field errors, nothing saved. Days 1 and 7 and reasons of 3 and 255 characters are accepted (201) | Postman, PHPUnit |
+| AC-27 | Unauthorized | No token, a made-up token, and an expired token (expiry set in the past by the developer) | HTTP 401 with the same generic message each time, no data returned, rejection logged without the token | Postman, PHPUnit (expired-token test is new) |
+| AC-28 | Forbidden | Wrong role on an action; a borrower opens another borrower's request | HTTP 403, status unchanged, denial logged | Postman, PHPUnit |
+| AC-29 | Not found | Unknown request id, non-numeric id, unknown route | HTTP 404 as JSON; no stack trace, file path or framework detail in the body | Postman |
+| AC-30 | Duplicate and conflict | Second open request for the same item; approve twice; replayed signed message | 422, 409 and 409; status unchanged | Postman |
+| AC-31 | Rate limit (W1) | More than 5 failed logins for the same email within one minute | The next attempt returns 429 with a `Retry-After` header, the log records the throttle, and a different email still gets 401 (not 429). The per-IP limit of 10 per minute stays | Postman, PHPUnit (tests-first) |
+| AC-32 | Headers (W2, W3) | Any API response | No `X-Powered-By`; `X-Content-Type-Options: nosniff`, `Referrer-Policy` and, for authenticated JSON, `Cache-Control` containing `no-store` are present | PHPUnit for the added headers; developer capture (curl or DevTools) for `X-Powered-By`, because PHPUnit does not see the PHP-level header |
+| AC-33 | Data minimization (W4, conditional) | Responses for each role are listed field by field | Fields the Flutter screens do not need (for example audit user ids or correlation ids for a borrower) are removed or justified in writing. Applies only if the baseline shows such fields | Postman field review, PHPUnit |
+| AC-34 | Reliability | Notifier call times out (5 s); receiver unreachable; app waits more than 15 s | Timeout counts as a transient failure and is retried up to 3 attempts, then FAILED_NEEDS_HUMAN; the app shows its network-error state with "Try again" | PHPUnit with `Http::fake`, widget test, manual Caddy-stopped run |
+| AC-35 | Flutter states | The API answers 403, 401, 422, 429, 500 or cannot be reached | Each case shows its own understandable message; 500 shows no server detail; 401 returns to login with "Your session expired. Please sign in again."; 422 shows the server message under the field | `flutter test` |
+| AC-36 | Responsive and validation | New request form at desktop and narrow browser width; form limits compared with server limits | Core tasks stay readable and usable at both widths; client and server limits agree (reason 3 to 255, days 1 to 7). Any mismatch is recorded as a defect | Developer screenshots, widget test, limits check |
+| AC-37 | Regression | The baseline collection and both suites run again after the fixes | Every request that passed before still passes; every defect that was fixed now passes; counts of passed tests are recorded | Postman, `php artisan test`, `flutter test` |
+| AC-38 | Secrets | Secret scans from AC-20 and AC-24 repeated after Week 15 | No signing key, `APP_KEY` value, `.env`, token or password found in `laravel.log`, the repo or the evidence zip (dev-only seed passwords named and excluded) | developer scan |

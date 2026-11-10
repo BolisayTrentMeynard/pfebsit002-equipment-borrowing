@@ -72,3 +72,36 @@ Predictions for the other new requests:
  Field review (P-49, P-50) ..................... P-49: the two [W4] checks FAIL (audit_logs rows carry user_id and correlation_id). P-50: 200 and an empty list on fresh data.
  Expired token (P-66, P-67) .................... 401 "Unauthenticated." and an auth.rejected log line with no token in it.
  Setup (S-1 to S-5) ............................ 200 for all four logins and the equipment list, with six available items.
+
+
+==========================================================================================
+Chunk 2 ADDENDUM (drafted 2026-11-10 by Claude BEFORE the new tests are run; nothing has been run.
+The commit time of this addendum is the developer's record. Commit this file alone, before running the new tests.)
+==========================================================================================
+Scope of chunk 2: fix DEF-01 (W1), DEF-02 (W2), DEF-03 (W3) and, as approved extras, DEF-04 (W4), DEF-05 (W7), DEF-06 (W8), DEF-07 (W6). No new routes, no new features. Tests first: the new file backend/tests/Feature/HardeningTest.php has 14 tests. W2 has no PHPUnit test (PHP adds X-Powered-By outside Laravel); it is checked by a developer capture after the fix.
+
+Prediction A: tests-first run on the UNMODIFIED code (php artisan test)
+  Total expected: 61 tests (47 old + 14 new). Expected result: 52 passed, 9 failed.
+  The 9 expected failures (each proves a weakness):
+    1. test_ac31_sixth_failed_login_for_same_email_is_429_with_retry_after .... gets 401, not 429 (W1)
+    2. test_ac31_locked_email_refuses_correct_password_too ..................... gets 200, not 429 (W1)
+    3. test_ac31_throttle_is_logged_without_email_or_password .................. no auth.login_throttled line (W1)
+    4. test_ac32_security_headers_on_authenticated_json ........................ no nosniff header (W3)
+    5. test_ac32_security_headers_on_error_responses ........................... no nosniff header (W3)
+    6. test_ac33_detail_audit_rows_have_no_internal_ids ........................ rows still carry id, user_id, correlation_id (W4)
+    7. test_ac28_object_level_denial_is_logged ................................. 403 but no log line (W6)
+    8. test_ac29_not_found_message_is_generic .................................. message names App\Models\BorrowRequest (W7)
+    9. test_ac29_id_with_trailing_letters_is_404 ............................... gets 200 (W8)
+  The 5 expected passes among the new tests (they guard behavior that already works): other email is not locked, a good login resets the counter, history fields the app needs are present, a plain numeric id works, an expired token gives 401 and a log line without the token.
+  The 47 old tests: all pass (nothing changed yet).
+
+Prediction B: after the fix zip (same command)
+  Expected: 61 passed, 0 failed (about 150 assertions; the count is not important, the pass/fail is).
+  If any old test fails after the fix, that is a regression and is recorded as a finding, not hidden.
+
+Prediction C: manual check of W2 after the fix (developer capture, restart php artisan serve first)
+  A curl or DevTools look at the response headers of GET https://localhost:8443/up and GET /api/me shows NO X-Powered-By line. Before the fix it showed X-Powered-By: PHP/8.2.12 (Postman P-47 and P-48).
+  Possible surprise: Caddy or the PHP built-in server could still add a header. If the header is still there after the fix, that is recorded and the fix is revisited, not declared done.
+
+Prediction D: curl header check on the fixed code
+  GET /api/me with a token: X-Content-Type-Options: nosniff, Referrer-Policy: no-referrer, Cache-Control contains no-store, X-Correlation-ID present.

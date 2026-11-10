@@ -44,3 +44,31 @@ Run: in the app, submit a wrong password 6 times for the same email within a min
 Prediction: attempts 1 to 5 show "Invalid credentials."; the 6th shows "Too many attempts. Wait a minute and try again."; after about a minute the correct password works; a different email is not blocked in the meantime. The log has a throttle line without the email or password.
 
 Chunk 3 and 5 predictions are added here before those chunks run.
+
+
+==========================================================================================
+Chunk 1 ADDENDUM (drafted 2026-11-10 by Claude BEFORE the baseline run; nothing has been run.
+The commit time of this addendum is the developer's record. Commit this file alone before the run.)
+==========================================================================================
+The collection (evidence/week-15/postman/) has 67 requests: setup S-1 to S-5 and P-01 to P-67. The tests assert the desired behavior, so a failed [W..] check on the current code is the expected baseline.
+
+New candidates found while writing the requests (read from the code, NOT in the predictions above):
+ W7 Not-found message ........ GET /api/requests/99999 returns 404 JSON, but Laravel's message for a missing model is probably "No query results for model [App\Models\BorrowRequest] 99999." That names an internal class. Prediction: the check "[W7 candidate]" FAILS (weakness probable); the no-trace/no-file-path checks PASS when APP_DEBUG=false. With APP_DEBUG=true the trace checks would fail instead, so the run is done with APP_DEBUG=false.
+ W8 Id with trailing letters .. GET /api/requests/{id}abc (for example 1abc): route model binding does not limit the id to digits and MySQL reads "1abc" as 1. Prediction: returns 200 with request 1, so the check "[W8 candidate]" FAILS (weakness probable, low severity: the caller still needs a valid token and the same role rules apply).
+
+Predictions for the other new requests:
+ Logout (P-53, P-54) ........................... 200 "Logged out."; the same token then gets 401.
+ Wrong password vs unknown email (P-28, P-29) .. 401 "Invalid credentials." both, identical message.
+ Staff submits a request (P-33) ................ 403, nothing saved.
+ Status jump (P-46: release a PENDING request) . 409 "Cannot release a request that is PENDING."
+ Receiver, no headers (P-51) ................... 400, reason malformed.
+ Receiver, wrong signature (P-52) .............. 401, reason bad_signature.
+ Rate limit sequence (P-55 to P-65, 11 wrong-password logins within one minute):
+   attempts 1 to 5 same email ................... 401 each
+   attempt 6 same email (P-60) .................. 401 on the current code (W1 confirmed; the check for 429 + Retry-After FAILS)
+   attempt 7 other email (P-61) ................. 401
+   attempts 8 to 10, other emails ............... 401
+   attempt 11 (P-65) ............................ 429 with Retry-After (per-IP limit of 10 per minute, works today)
+ Field review (P-49, P-50) ..................... P-49: the two [W4] checks FAIL (audit_logs rows carry user_id and correlation_id). P-50: 200 and an empty list on fresh data.
+ Expired token (P-66, P-67) .................... 401 "Unauthenticated." and an auth.rejected log line with no token in it.
+ Setup (S-1 to S-5) ............................ 200 for all four logins and the equipment list, with six available items.

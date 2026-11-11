@@ -133,3 +133,6 @@ Priority follows DR-005 (likelihood, impact, exposure). "Fix planned" is a propo
 Not defects (documented, not fixed): W5 double-submit race (backlog, see DR-005); CORS regex accepts any localhost port; `$guarded = []` on three internal models.
 
 **Weaknesses fixed in Week 15 (proposal):** at least three are required; DEF-01, DEF-02 and DEF-03 are the core set. DEF-04 is the clearest data-minimization case. DEF-05 to DEF-07 are cheap and small; the developer decides.
+
+## Update after the fixes (2026-11-11)
+All seven defects above were fixed in chunk 2 (`a17a13e`) and passed in the rerun on 2026-11-11 (149 tests, 149 passed). Two more defects were found later by `flutter test`, not by this baseline: DEF-08 (unhandled `ApiException` on a 401; first `flutter test` run 13 passed, 2 failed) and DEF-09 (app bar overflow of 103 px at 360 px). Both were fixed in chunk 3 (`1a3c001`; 15 passed). Their cause, fix and retest are in `defect-register.md`. This file records the baseline as it was and is not rewritten.

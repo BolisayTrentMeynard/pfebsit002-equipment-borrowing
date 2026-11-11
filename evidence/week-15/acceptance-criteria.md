@@ -18,3 +18,6 @@ Numbering continues from Week 14 (AC-15 to AC-24). Expected results are written 
 | AC-36 | Responsive and validation | New request form at desktop and narrow browser width; form limits compared with server limits | Core tasks stay readable and usable at both widths; client and server limits agree (reason 3 to 255, days 1 to 7). Any mismatch is recorded as a defect | Developer screenshots, widget test, limits check |
 | AC-37 | Regression | The baseline collection and both suites run again after the fixes | Every request that passed before still passes; every defect that was fixed now passes; counts of passed tests are recorded | Postman, `php artisan test`, `flutter test` |
 | AC-38 | Secrets | Secret scans from AC-20 and AC-24 repeated after Week 15 | No signing key, `APP_KEY` value, `.env`, token or password found in `laravel.log`, the repo or the evidence zip (dev-only seed passwords named and excluded) | developer scan |
+
+## Values confirmed when the fixes were built (2026-11-10)
+AC-31: 5 failed logins per email per minute, 429 with `Retry-After`, unknown emails counted too. AC-32: `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store, private` on `api/*` responses. Results are in `test-matrix.md`.

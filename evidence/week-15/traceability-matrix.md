@@ -1,4 +1,4 @@
-# Traceability Matrix v2 (Week 15; v1 written 2026-11-10 before any test run, baseline results added after chunk 1)
+# Traceability Matrix v3 (Week 15; v1 written 2026-11-10 before any test run, baseline results added after chunk 1, final results added 2026-11-11)
 
 Every requirement or control is linked to the tests that check it. Parts A to C are unchanged from v1 (the Result column still says "Planned" or points to the earlier week's matrix). Part E adds the baseline result of the counted run; it records what the unmodified code did, not a pass of the criterion. Test IDs `P-nn` (Postman) are assigned when the collection is written in chunk 1; until then the column names the folder and the planned case.
 
@@ -73,3 +73,23 @@ Runner: 149 tests, 137 passed, 12 failed, 0 errors. `php artisan test`: 47 passe
 | AC-34 to AC-36 | PHPUnit, widget tests, manual | Not run yet (chunks 3 and 4) | |
 | AC-37 Regression | rerun in chunk 5 | Baseline counts recorded above | |
 | AC-38 Secrets | scans in chunk 5 | Not run yet | |
+
+## Part F: Final result (after the fixes, 2026-11-11; per developer's results and screenshots)
+Rerun on fresh data: Postman 149 tests, 149 passed, 0 failed. `php artisan test`: 61 passed. `flutter test`: 15 passed. The Result column of Part A still says what the earlier week's matrix recorded; AC-01 to AC-24 were exercised again by the same Postman run and the full suites (no old test failed), but they are not re-judged one by one here. Full detail is in `test-matrix.md`.
+
+| Criterion | Tests | Final result | Defects (all fixed) |
+|-----------|-------|--------------|---------------------|
+| AC-25 Baseline | whole collection | Pass (recorded with its 12 failures) | DEF-01 to DEF-07 |
+| AC-26 Invalid and boundary | P-09 to P-24, form limits test | Pass | none |
+| AC-27 Unauthorized, expired token | P-25 to P-29, P-53, P-54, manual P-66 and P-67, PHPUnit expired-token test, 401 widget test | Pass (API level; browser test A not run) | none |
+| AC-28 Forbidden | P-30 to P-36, PHPUnit denial-log test | Pass after fix | DEF-07 |
+| AC-29 Not found | P-37 to P-41, three PHPUnit tests | Pass after fix | DEF-05, DEF-06 |
+| AC-30 Duplicate and conflict | P-42 to P-46, P-51, P-52 | Pass (concurrency in backlog) | none |
+| AC-31 Rate limit | P-55 to P-65, five PHPUnit tests | Pass after fix (lockout in the app not run) | DEF-01 |
+| AC-32 Headers | P-47, P-48, two PHPUnit tests, curl capture | Pass after fix | DEF-02, DEF-03 |
+| AC-33 Data minimization | P-49, P-50, two PHPUnit tests | Pass for audit rows; recipient fields not reviewed | DEF-04 |
+| AC-34 Timeout and dependency failure | widget tests, `test_sender_maps_failures_to_retry_or_human`, Week 14 runs | Partial (no separate test of the 5 s notifier timeout) | none |
+| AC-35 Client states | `flutter test` (six state tests) | Pass | DEF-08 |
+| AC-36 Responsive and validation | `flutter test` (layout and limits), desktop and 360 px screenshots | Pass (new request form: widget test only) | DEF-09 |
+| AC-37 Regression | Postman rerun, both suites | Pass (149/149, 61, +15) | none |
+| AC-38 Secrets | scans on `laravel.log` and git history | Pass (evidence folder not scanned) | none |

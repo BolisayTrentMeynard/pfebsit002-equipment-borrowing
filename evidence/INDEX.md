@@ -6,7 +6,7 @@ One repository for the whole project. Each week's work is a git tag (for example
 |------|-----|-------|----------|
 | 13 | `week-13` | Advanced Automation and Scripting | [`week-13/INDEX.md`](week-13/INDEX.md) |
 | 14 | `week-14` | Secure Data Exchange and Encryption | [`week-14/INDEX.md`](week-14/INDEX.md) |
-| 15 | `week-15` | Integration Testing and Security Hardening | [`week-15/INDEX.md`](week-15/INDEX.md) (in progress) |
+| 15 | `week-15` | Integration Testing and Security Hardening | [`week-15/INDEX.md`](week-15/INDEX.md) |
 | 16 | `week-16` | Performance, Reliability and Deployment | not started |
 | 17 | `week-17` | Final Integration UAT and Evaluation | not started |
 | 18 | `week-18` | Final Review, Demo and Technical Defense | not started |

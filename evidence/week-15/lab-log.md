@@ -2,7 +2,7 @@
 
 | Item | Value |
 |------|-------|
-| Date started | 2026-11-10 (chunk 0: planning and design documents) |
+| Date started | 2026-11-10 (chunk 0: planning and design documents); finished 2026-11-11 |
 | Branch | `week-15-hardening` |
 | Project | #5 Equipment Borrowing Reminder System (registered, see Week 13 log) |
 | Backend | Laravel 12, PHP 8.2.12 (XAMPP), Composer 2.10.2, MySQL (XAMPP, MariaDB) |
@@ -30,3 +30,7 @@ Note: the registry approval covers the project title only. It does not allow rea
 - 2026-11-10: Claude wrote the filled-in `baseline-results.md` from the developer's screenshots (not from a run). Claude first misread the log's correlation ids as a different format because a terminal screenshot was cropped; corrected after the P-49 body and the next log lines showed full UUIDs.
 - 2026-11-10: Flutter reports a newer version is available; not upgraded on purpose (the evidence records Flutter 3.47.8).
 - Chrome version line above is still the placeholder (`chrome://version`).
+- 2026-11-10: Chunk 2 (backend hardening, tests first), per the developer's terminal output and screenshots. Predictions addendum committed alone as `b9c9f77` at 17:01:16 +0800. New `HardeningTest.php` (14 tests) committed as `941a336`. First run on the unmodified code: 9 failed, 52 passed (182 assertions), as predicted. Fixes committed as `a17a13e` (5 files); `php artisan test`: 61 passed. DEF-01 to DEF-07 fixed. Header check by curl after the fix: first try printed nothing and the next one failed with a certificate revocation error (Windows could not check revocation for Caddy's local CA); the working command used `--ssl-no-revoke` (the certificate is still verified). Claude ran nothing.
+- 2026-11-10: Chunk 3 (Flutter state tests). Predictions addendum committed alone as `b2758f8` at 17:18:45 +0800. New `app/test/states_test.dart` (10 tests). First run: 13 passed, 2 failed (predicted 15 passed); the failures were real app defects: DEF-08 (unhandled `ApiException` on a 401) and DEF-09 (app bar overflow of 103 px at 360 px). Fixed and committed as `1a3c001` (5 files); `flutter test`: 15 passed. Desktop and narrow screenshots taken by the developer. Claude inferred the app bar as the overflow location from the code; the narrow test passing after the fix supports it.
+- 2026-11-11: Chunk 4 (optional adverse tests A, B, C) skipped by the developer's choice (fast route). Chunk 5 predictions committed alone as `03a633f` (about 10:15 AM). Data reset with `php artisan migrate:fresh --seed`. Postman attempts: 10:18:56 (0 tests), 10:21:30 (44 tests, 31 failed, stopped, every request after setup got 401, cause unknown); neither counted. Counted rerun at 10:23:50: 149 tests, 149 passed, 0 failed, 0 errors, 2m 26s. `php artisan test`: 61 passed (195 assertions, 68.41 s). `flutter test`: 15 passed. Secret scans: key length 64, 0 log matches, no tracked `.env`, `.sqlite` or `.pem`, key and `APP_KEY` in 0 commits, positive control found 5 commits.
+- 2026-11-11: Evidence round (chunk 6) written by Claude from the code, the results and the developer's screenshots (nothing run by Claude): `test-matrix.md`, `defect-register.md`, `hardening-report.md`, `interpretation-and-maintainability-note.md`, `residual-risk-register.md`, updated INDEX, traceability matrix (Part F), DR-005, `baseline-results.md` and the predictions file.

@@ -19,7 +19,7 @@ Limits used in the demo: loan of 7 days, at most 3 reminders and 2 escalations p
 |------|-----|----------------|--------|
 | 13 | `week-13` | Backend API with roles and audit log, reminder automation (scheduler, queue, bounded retries, manual handling), Flutter screens for all roles | Done |
 | 14 | `week-14` | HTTPS in front of the API, signed (HMAC-SHA256) notifier messages that reject altered, expired and replayed messages, keys kept in `.env`, MySQL instead of SQLite | Done |
-| 15 | `week-15` | Integration testing and security hardening (Postman collection, traceability, fixes, regression evidence) | In progress |
+| 15 | `week-15` | Integration testing and security hardening (Postman collection, traceability, nine fixes, regression evidence) | Done |
 | 16 | `week-16` | Performance, reliability and deployment | Not started |
 | 17 | `week-17` | Final integration, UAT and evaluation | Not started |
 | 18 | `week-18` | Final review, demo and technical defense | Not started |

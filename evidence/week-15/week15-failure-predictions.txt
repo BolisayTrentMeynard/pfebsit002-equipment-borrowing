@@ -142,3 +142,14 @@ Prediction B - php artisan test: 61 passed (47 old + 14 HardeningTest). flutter 
 Prediction C - scans (AC-20, AC-24):
   laravel.log search for Bearer, password, X-Message-Signature and the signing key: no matches. (The log now also holds lines from the chunk 2 and 3 runs.)
   Tracked-file check: no .env, .sqlite or .pem in git ls-files. Signing key and APP_KEY value in 0 commits.
+
+
+==========================================================================================
+ACTUAL RESULTS (added by Claude on 2026-11-11 in the evidence round, AFTER the runs, from the developer's screenshots and word.
+The predictions above were committed before the runs; this section is not part of that commit.)
+==========================================================================================
+Chunk 1 baseline (2026-11-10, counted run 15:58:25): 149 tests, 137 passed, 12 failed (P-37, P-41, P-47 x4, P-48 x2, P-49 x2, P-60 x2). W1, W2, W3, W4, W6, W7, W8 confirmed. Expired token: M-1 200, then M-2 401, auth.rejected logged without the token. P-65 (11th login) 429 with Retry-After.
+Chunk 2 Prediction A: matches. 9 failed, 52 passed (182 assertions), the nine named tests failed. Prediction B: 61 passed. Prediction C: no X-Powered-By on /up and /api/nope (curl with --ssl-no-revoke); /api/me not captured by curl. Prediction D: nosniff, Referrer-Policy: no-referrer and Cache-Control: no-store, private seen on /api/nope; X-Correlation-ID not captured (unknown route).
+Chunk 3 Prediction A: did NOT match. Predicted 15 passed; actual first run 13 passed, 2 failed (401 test: DEF-08; narrow test: DEF-09, overflow of 103 px). After the fixes: 15 passed. The two flagged-as-least-sure spots (dropdown pick, empty-state Refresh) passed.
+Chunk 4 (tests A, B, C): not run (developer's choice, 2026-11-11).
+Chunk 5 Prediction A: matches. Rerun 10:23:50: 149 tests, 149 passed, 0 failed. P-60 and P-47 (least sure) passed. Two earlier attempts the same morning (10:18:56, 0 tests; 10:21:30, 44 tests, 31 failed, stopped) are not counted; cause unknown. Prediction B: matches (61 passed, 195 assertions; +15). Prediction C: matches (0 matches for Bearer, password, X-Message-Signature and the signing key; no tracked .env, .sqlite or .pem; key and APP_KEY in 0 commits; positive control found 5 commits).

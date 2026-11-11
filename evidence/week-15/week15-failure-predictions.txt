@@ -120,3 +120,25 @@ Prediction A: flutter test (in app/)
   The tests: 403 detail ("Not allowed" and the plain message, still signed in); 401 back to login with "Your session expired. Please sign in again." and the token cleared; 422 message under the field; 429 on login; 500 shows only "The server had a problem. Try again in a moment." (no SQLSTATE, no table name); network error with "Try again" that recovers; 15 s timeout shows "took too long"; login and new-request form at 1280x800 and at 360x640 with no layout error; form limits (reason 2 refused, 3 accepted, days 0 and 8 refused, 1 and 7 accepted, 256 characters cannot be typed).
   Where I am least sure (a failure here may be the TEST, not the app, and will be recorded as such): picking the equipment in the dropdown (422 test), the 15-second timeout test (fake clock), "Refresh" being a single button on the empty list (401 test), the "New request" button text at 360 px width.
   If a test fails because the app really behaves differently, that is a finding and becomes DEF-08 and up; I will not change the test to hide it.
+
+
+==========================================================================================
+Chunk 5 ADDENDUM (drafted 2026-11-11 by Claude BEFORE the rerun; nothing has been run.
+The commit time of this addendum is the developer's record. Commit this file alone before the rerun.)
+==========================================================================================
+Chunks 2 and 3 fixed DEF-01 to DEF-09. Chunk 5 reruns the same checks to show the fixes work and nothing else broke.
+
+Run: php artisan migrate:fresh --seed, then the full Postman collection once (99 Manual is not part of it), then both test suites, then the AC-20 and AC-24 scans.
+
+Prediction A - Postman full run (same collection as the baseline, 149 tests):
+  Expected: 149 tests, 149 passed, 0 failed. The 12 baseline failures should now pass:
+  P-37 (404 message no longer names the model class), P-41 (/requests/1abc gives 404), P-47 and P-48 (no X-Powered-By; nosniff, Referrer-Policy and Cache-Control no-store present),
+  P-49 (no user_id or correlation_id in audit rows for a borrower), P-60 (6th wrong password for the same email gives 429 with Retry-After).
+  Everything that passed before should still pass. P-65 (11th login) still gives 429, P-61 to P-64 (other emails) still give 401.
+  Least sure: P-60 (exact Retry-After value and the 429 on the 6th try) and P-47 (exact Cache-Control string). If any check fails it is a finding (DEF-10 and up), not a reason to change the check.
+
+Prediction B - php artisan test: 61 passed (47 old + 14 HardeningTest). flutter test: +15 All tests passed.
+
+Prediction C - scans (AC-20, AC-24):
+  laravel.log search for Bearer, password, X-Message-Signature and the signing key: no matches. (The log now also holds lines from the chunk 2 and 3 runs.)
+  Tracked-file check: no .env, .sqlite or .pem in git ls-files. Signing key and APP_KEY value in 0 commits.

@@ -2,7 +2,7 @@
 
 Status: **Complete for Week 16 (2026-11-15).** Baseline, ordinary, peak and spike (chunk 3, OPcache off) and the before and after rerun (chunk 5, OPcache on) are filled in. Optional runs (volume, 20-minute, queue-worker-stopped) were CUT under C3 and not done; the spike was not repeated after the change. Claude filled this sheet from the developer's screenshots and terminal output; it never invents a number, and Claude ran no test itself. Every run starts from a fresh reset (`deploy\staging-release.ps1 -SkipBuild`, then `LoadTestSeeder`). Runs that fail for a setup reason are listed and not counted.
 
-Environment (fill in once): one Windows PC, XAMPP MySQL (MariaDB), `php artisan serve` (single-threaded) on 8001 behind Caddy on 9443, k6 v2.4.0 on the same PC, `APP_ENV=staging`, `APP_DEBUG=false`, `LOG_LEVEL=info`. Logical cores: 12 (sampler's first line). CPU model: _developer: still to be added_. Chrome version: _developer: still to be added_.
+Environment (fill in once): one Windows PC, XAMPP MySQL (MariaDB), `php artisan serve` (single-threaded) on 8001 behind Caddy on 9443, k6 v2.4.0 on the same PC, `APP_ENV=staging`, `APP_DEBUG=false`, `LOG_LEVEL=info`. Logical cores: 12 (sampler's first line). CPU model: 13th Gen Intel Core i5-13420H (8 cores, 12 logical processors, base speed 2.10 GHz), 15.7 GB RAM, from Task Manager on 2026-11-15. Chrome: Google Chrome 157.0.8103.51 (Official Build, 64-bit, Stable), Windows 11 25H2 (build 26200.9974), from chrome://version on 2026-11-15.
 
 Limits (they stay next to every number): assumed traffic, not real users; the load generator and the system share one PC; one IP address for all fake users; a single-threaded server; times include k6's own CPU use.
 

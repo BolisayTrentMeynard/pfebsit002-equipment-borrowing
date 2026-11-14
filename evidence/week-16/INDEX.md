@@ -1,8 +1,8 @@
 # Week 16 Evidence Index: Performance, Reliability and Deployment
 
-Status (2026-11-15): **Done** (chunks 0 to 6). Chunks 0 to 5 are committed and pushed on `week-16-deployment`. This evidence round (chunk 6) was written by Claude from the files in the clean zip, the developer's terminal output and screenshots and the progress notes; Claude ran no code. Raw captures (screenshots, terminal output, k6 summaries) will be on Google Drive in the `Week 16` folder; the link is added below once uploaded.
+Status (2026-11-15): **Done** (chunks 0 to 6). Chunks 0 to 5 are committed and pushed on `week-16-deployment`. This evidence round (chunk 6) was written by Claude from the files in the clean zip, the developer's terminal output and screenshots and the progress notes; Claude ran no code. Raw captures (screenshots, terminal output, k6 summaries) are on Google Drive in the `Week 16` folder (link below).
 
-Drive folder link: _not added yet_
+Drive folder link: https://drive.google.com/drive/folders/1kAu5BSYOa49lpWCxE5s8HUqkITmE8PXe?usp=sharing
 
 Scope of every number: one Windows PC, `php artisan serve` (single-threaded) behind Caddy, k6 and the sampler on the same PC. The recommendation is conditional and never says "production ready".
 
@@ -57,7 +57,7 @@ Scope of every number: one Windows PC, `php artisan serve` (single-threaded) beh
 | 3 | `80d7792`, `62c7b5d`, `2cde512` (addendum 2, 18:35:55), `860c2a9`, `51762b3` |
 | 4 and 4b | `c25e6ec` (19:43:49), `f1f8940`, `74e1025` (21:02:00), `26771c1`, `b75c011`, `8a41e6e` |
 | 5 | `8a02169` (2026-11-14 23:53:06), `792d9b6` (2026-11-15 01:34:18), `d6fdf1c` (01:37:24) |
-| 6 | _to be added by the developer after committing this evidence round_ |
+| 6 | `02705d7` (evidence round, 13 files); merged into `main` (fast-forward `4e6a033..02705d7`) and tagged `week-16` (per developer's terminal output) |
 
 ## Known gaps (said openly)
 - AC-42 Partial: the peak target is missed before and after the change; endurance not run.
@@ -68,7 +68,6 @@ Scope of every number: one Windows PC, `php artisan serve` (single-threaded) beh
 - The php CPU of the "after" runs was not compared (CSVs on the PC, not read by Claude).
 - Unexplained: Apache and MySQL stop and start events in chunks 4 and 4b, and the two MySQL crashes after the 4b Start.
 - Some captures were taken but not shown to Claude (first release run with the Flutter build, new-request screenshots, the Postman Runner summary, the `login` Request URL).
-- CPU model and Chrome version lines are still placeholders.
 
 ## Raw captures (on Drive, not in the repo)
 Planned names are `week16-<chunk>-<what>.png`, filed by Claude when the developer sends the sorted folder. Keep the Authorization header, `.env`, `.env.staging`, the load-test password, the dev seed password and the dump out of every frame.

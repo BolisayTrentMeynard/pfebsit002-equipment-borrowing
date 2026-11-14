@@ -10,8 +10,8 @@ export const options = {
   summaryTrendStats: TREND_STATS,
   scenarios: {
     // first the endpoints (predicted about 1 to 2 minutes), then the paced logins from minute 4, so the two never overlap
-    endpoints: { executor: 'per-vu-iterations', vus: 1, iterations: 30, maxDuration: '3m30s', exec: 'endpoints', startTime: '0s' },
-    login_timing: { executor: 'per-vu-iterations', vus: 1, iterations: 30, maxDuration: '10m', exec: 'loginTiming', startTime: '4m' },
+    endpoints: { executor: 'per-vu-iterations', vus: 1, iterations: 30, maxDuration: '5m', exec: 'endpoints', startTime: '0s' },
+    login_timing: { executor: 'per-vu-iterations', vus: 1, iterations: 30, maxDuration: '10m', exec: 'loginTiming', startTime: '5m15s' },
   },
   thresholds: { err_all: ['rate<0.01'] },
 };

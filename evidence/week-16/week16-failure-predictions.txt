@@ -320,3 +320,19 @@ C4b-7  Flutter app (signed in as loadborrower01 BEFORE the stop, tab on "My requ
 C4b-8  After MySQL is started: the first readiness 200 within 1 to 10 s of the Start click (the first run gave 6 s). In the app, Try again loads the list WITHOUT signing in again (about 90%; the token is a row in the database and the database was only stopped).
 C4b-9  No data change: no write is made in this run, so `borrow_requests_total` stays 12 (or the same number as at the start; the developer writes it down from `integrity-check.sql` before and after, optional).
 C4b-10 Not tested here (stated so nobody expects it): load, the queue worker, a MySQL crash, longer outages, a fix for the slow failing call (a candidate for chunk 5).
+
+=======================================================================
+CHUNK 4b ACTUAL RESULTS (written 2026-11-14 night, after the outage; the predictions above were committed first as 74e1025)
+Counted attempt: MySQL stopped 21:17:42, Start click 21:20:36 (planned outage about 2 min 54 s). Full table: failure-test-results.md, chunk 4b.
+
+C4b-1 HIT. /up answered 200 in 0.64 s.
+C4b-2 HIT. Readiness 503, body {"status":"fail"}, no-store, 8.87 s (inside 4 to 12 s, H3).
+C4b-3 HIT. /api/me without a token: 401 Unauthenticated in 0.75 s.
+C4b-4 HIT. /api/me with the made-up token: 500 {"message":"Server Error"}, no SQL, security headers present, 8.90 s.
+C4b-5 HIT on content: Database NOT REACHABLE, four counts "unknown (database down)", Debug mode off, Log level info, exit code 1, no stack trace. The time (3 to 20 s) was not measured.
+C4b-6 HIT. Get-Process mysqld: NoProcessFoundForGivenName.
+C4b-7 HIT. App on My requests showed "Something went wrong. The server had a problem. Try again in a moment." with Try again, still signed in. (At 21:22, during a second unplanned outage, it showed "Cannot reach the server" instead; not scored.)
+C4b-8 NOT SCORED. MySQL crashed twice after the Start click (21:20:46 and 21:21:49) and was running again at 21:24:05. No readiness check between the click and 21:21:25, so the 1 to 10 s claim was not tested.
+C4b-9 HIT with a limit. borrow_requests_total 0, audit_logs_total 0, submit_audit_rows 0, equipment 56 available; the number before the outage was not captured (0 is expected after the reset and seeding).
+C4b-10 Not applicable. A MySQL crash was listed as not tested; two unplanned crashes happened and nothing was claimed about them.
+Hypothesis H3: one failing call alone took about 9 s (8.87, 8.90, 8.95 s) and /up alone 0.64 s. Consistent with queueing in chunk 4; queueing itself was not measured here.

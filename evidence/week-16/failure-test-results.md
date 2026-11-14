@@ -98,5 +98,83 @@ Not done. No claim is made about what the app shows when the database is down.
 3. **AC-44 limit confirmed:** exception text in `laravel.log` holds the SQL with a token hash (22 lines). Candidate fix: report database connection errors without bindings. Not applied; keep as a recorded limit if not fixed.
 4. **No partial write** after the outage (12 requests, 12 submit rows, audit arithmetic consistent).
 5. **Recovery was fast once MySQL ran again:** first readiness 200 six seconds after the Start click, with no restart of php or Caddy.
-6. **Not done, stated openly:** M3 to M6, the app check, `ops:status` during the outage. A clean rerun with the Start on time was not done (developer's decision).
+6. **Not done in this run, stated openly:** M3 to M6, the app check, `ops:status` during the outage. They were done in the second, short outage (chunk 4b, below). A clean rerun of the full k6 outage with the Start on time was not done (developer's decision).
 7. Misses kept: detection time (99 s vs 10 to 25 s), 5xx-answer latency (both hypotheses), answer count during the outage (10 vs 30 to 100), ERROR count (22 vs 30 to 100), recovery time (6 s vs 10 to 30 s, faster), "before" p95 (2.8 s vs 1.5 to 2.5 s, slightly high).
+
+---
+
+# Chunk 4b: second short outage (no k6, no sampler, no reset of the run)
+
+Status: **outage part counted; recovery part disturbed and NOT counted as a recovery measurement.** Written by Claude from the developer's screenshots (terminal, XAMPP Control Panel, app). Claude ran nothing. Predictions: `week16-failure-predictions.txt`, chunk 4b addendum (C4b-1 to C4b-10), committed alone as `74e1025` at 2026-11-14 21:02:00 +0800 (before the outage) and pushed (`f1f8940..74e1025`).
+
+What it was: MySQL stopped by hand in the XAMPP Control Panel (MySQL row only, Apache untouched), one person, one request at a time, no load. Staging was reset (`staging-release.ps1 -SkipBuild`) and `LoadTestSeeder` was run before the counted attempt. Purpose: do what chunk 4 could not (M3 to M6, `ops:status`, the app during an outage) and test H3 (one failing call alone takes about 6 to 9 s; the 40 s answers in chunk 4 were queueing).
+
+## Run log
+| Attempt | Time (PHT, XAMPP log) | Counted? | What happened |
+|---------|-----------------------|----------|---------------|
+| First attempt | Stop 21:04:22, accidental Start 21:04:26, Stop again 21:04:29, Start 21:06:46 | No | Only M6 was captured (`Get-Process mysqld`: no process, as predicted). The accidental Start click broke the outage into two parts. Not mixed into the counted run. |
+| Unexplained stop | Stop 21:11:47, Start 21:11:53 | No | The reason was not given by the developer. Recorded as unexplained. |
+| Counted attempt | Stop 21:17:42 | Outage: **Yes**. Recovery: **No** | Setup was clean (readiness 200 at 21:17:07). MySQL was started at 21:20:36 but then crashed twice (see Incident). |
+
+## Timeline (counted attempt)
+| Event | Time (PHT) | Source |
+|-------|------------|--------|
+| Readiness 200 before the stop (0.57 s) | 21:17:07 | curl Date header 13:17:07 GMT |
+| MySQL stopped | 21:17:42 | XAMPP log |
+| M3 `/api/me`, no token | 21:18:07 | Date 13:18:07 GMT |
+| M1 `/up` | 21:18:25 | Date 13:18:25 GMT |
+| M2 readiness | 21:18:48 | Date 13:18:48 GMT (log line 13:18:47) |
+| M4 `/api/me`, made-up token | 21:19:15 | Date 13:19:15 GMT |
+| M5 `ops:status`, M6 `Get-Process mysqld` | between M4 and 21:20:36 | screenshots (no clock visible) |
+| App list during the outage | 21:20 | taskbar clock |
+| Start click | 21:20:36 | XAMPP log (running 21:20:37) |
+| **Crash 1: "MySQL shutdown unexpectedly"** | 21:20:46 | XAMPP log; running again 21:20:50 |
+| Readiness 200 | 21:21:25 | Date 13:21:25 GMT |
+| **Crash 2: "MySQL shutdown unexpectedly"** | 21:21:49 | XAMPP log |
+| Readiness 503 (8.95 s) and the app showing "Cannot reach the server" | 21:22:33 and 21:22 | Date 13:22:33 GMT, taskbar clock |
+| MySQL started (running) | 21:24:05 | XAMPP log and `mysql_error.log` |
+| Readiness 200 (0.92 s) and again (0.58 s) | 21:28:34 and 21:29:25 | Date headers |
+| App list loaded, "No requests yet" | 21:30 | taskbar clock |
+
+The planned outage lasted about 2 min 54 s (21:17:42 to the Start click at 21:20:36).
+
+## Manual checks during the planned outage
+| Check | Predicted | Actual | Result |
+|-------|-----------|--------|--------|
+| M3 `/api/me`, no token (C4b-3) | 401 `{"message":"Unauthenticated."}` in under 2 s (about 80%) | **401**, same body, `time_total=0.75 s` | Hit |
+| M1 `/up` (C4b-1) | 200 in 0.4 to 1.5 s (about 85%) | **200**, `Application up`, `time_total=0.64 s` | Hit |
+| M2 readiness (C4b-2) | 503 `{"status":"fail"}`, no-store, 4 to 12 s (H3, about 55%) | **503**, body exactly `{"status":"fail"}`, `Cache-Control: no-store, private`, `nosniff`, `time_total=8.87 s` | Hit |
+| M4 made-up token (C4b-4) | 500 `{"message":"Server Error"}`, no SQL, security headers, 4 to 12 s | **500**, body `{"message": "Server Error"}`, `no-store`, `nosniff`, `Referrer-Policy`, `time_total=8.90 s` | Hit |
+| M5 `ops:status` (C4b-5) | Database NOT REACHABLE, counts "unknown (database down)", debug off, log level info, exit code 1, no stack trace | Exactly that: Environment staging, Debug off, Log level info, Database NOT REACHABLE, Queue driver database, the four counts `unknown (database down)`, Log file 3,072 KB, **exit code 1** | Hit (the 3 to 20 s time was not measured) |
+| M6 `Get-Process mysqld` (C4b-6) | "Cannot find a process", instantly | Error `NoProcessFoundForGivenName` (only the last line of this run's output is visible in the screenshot; the full message is in the first attempt's screenshot) | Hit |
+| App tab, Refresh (C4b-7) | "Something went wrong" with a plain message and Try again, not the login screen | **"Something went wrong. The server had a problem. Try again in a moment."** with a Try again button; still signed in as Load Borrower 01 | Hit |
+
+H3: one failing call on its own took about 9 s three times (M2 8.87 s, M4 8.90 s, and 8.95 s for readiness at 21:22:33). `/up` alone took 0.64 s, against 39.7 s and 37.8 s in chunk 4. That is consistent with the chunk 4 delays being queueing on the single-threaded server. It is NOT a measurement of queueing: this run had one request at a time, and the cause of the 9 s per failing call is not measured.
+
+## Data and log checks
+| Check | Predicted (C4b-9) | Actual | Result |
+|-------|-------------------|--------|--------|
+| `borrow_requests_total` | unchanged | **0** | Hit, with a limit: the number before the outage was not captured; 0 is expected after the staging reset and `LoadTestSeeder`, and nothing was written during the run |
+| `audit_logs_total` | unchanged | **0** | Hit (same limit) |
+| `submit_audit_rows` (extra file) | 0 | **0** | Hit |
+| Equipment status | all available | `available` 56 | Hit |
+
+Log scan (from byte 3,118,270 to 3,224,330 = 106,060 bytes, 520 lines): 4 ERROR entries, all `SQLSTATE[HY000] [2002]` connection refused; 15 `http.request` lines (200 x8, 401 x1, 500 x4, 503 x2); 2 `health.ready_failed` lines (the first at 13:18:47 GMT, matching M2); Bearer 0, password 0, email shape 0, `X-Message-Signature` 0; 4 lines with a 64-character hex string (the token hash in the exception SQL, the same AC-44 limit as chunk 4); 8 of 8 connection frames hide the password. This window also holds the two crashes, so the 500 and 503 counts cannot be split between the planned outage and the crashes.
+
+## Incident: MySQL crashed twice after the Start click
+XAMPP logged "MySQL shutdown unexpectedly" at 21:20:46 and 21:21:49. `mysql_error.log` at the restart (21:24:05) shows InnoDB crash recovery, many "log sequence number is in the future" errors, and tablespace files that could not be opened for databases of other, unrelated projects in the same MySQL instance. The cause was not established; the developer reported that MySQL runs normally afterwards (readiness 200 twice, integrity checks ran). MySQL had been stopped by hand four times earlier that evening; that may or may not be related, and this is a guess, not a finding. Because of this, the recovery timing is NOT counted.
+
+- **C4b-8** (first readiness 200 within 1 to 10 s of the Start click; Try again loads the list without signing in): **not scored.** There was no readiness check between the Start click (21:20:36) and 21:21:25, and MySQL crashed twice. After "Try again" was pressed once (21:30), the app showed the list again while still signed in, which fits the prediction, but that was after the second restart.
+- **C4b-7 observation, not scored:** at 21:22 (during the second, unplanned outage) the app showed "Cannot reach the server: the server took too long to answer", the wording of the 25% alternative. The state was different from the planned outage, so it is recorded here only.
+- **C4b-10** said a MySQL crash was not tested here. An unplanned crash happened anyway; nothing was predicted about it and nothing is claimed.
+
+## Score against the predictions
+C4b-1, 2, 3, 4, 5, 6, 7 and 9: hit. C4b-8: not scored. C4b-10: not applicable. No misses in this addendum. Limits: the predictions were written after chunk 4, so they were informed by it; one outage by one person on one PC is an observation, not a rate; the 3 to 20 s time for `ops:status` was not measured.
+
+## Findings from chunk 4b
+1. A failing call alone takes about 9 s on this setup (H3 supported for the single call). The 40 s answers in chunk 4 are consistent with queueing. Why one refused connection takes about 9 s is not measured. The candidate fix stays the same for chunk 5 (tests first): a short database connect timeout.
+2. The no-token request (M3) answered in 0.75 s during the outage because it needs no database.
+3. A made-up token gives a plain 500 `Server Error` with no SQL, host or path in the response. The SQL with a token hash is only in `laravel.log` (AC-44 limit, 4 more lines).
+4. `ops:status` reports an outage correctly (exit code 1, no stack trace) on a real outage. This closes the gap from chunk 4 (M5).
+5. The Flutter app shows a plain error with Try again during an outage and does not log the user out.
+6. Recovery behaviour after a clean restart was already shown in chunk 4 (6 s). This chunk adds no clean recovery measurement because of the unplanned crashes.

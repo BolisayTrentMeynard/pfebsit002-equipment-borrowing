@@ -146,3 +146,8 @@ Checks 1, 2, 2b, 5 (first file) and 6, 7, 8 (second file) print nothing when all
 - A run that failed because of setup (wrong password, no reset, API window closed) is written down and not counted; reset and run again.
 - A login 429 in `setup()` means the login limit was hit by something else in the same minute (for example Postman). Wait a minute and rerun.
 - Never use `--http-debug` or `--out` options that print requests: they can echo the Authorization header.
+
+
+## Chunk 4b: second short outage, no load (closes the not-done checks of chunk 4)
+
+No PHP, Dart or k6 file changes. No k6, no sampler, no reset. The two STAGING windows (API 8001, Caddy 9443) must be running; MySQL must be running. About 15 minutes. Steps are in the chat hand-over; the predictions are the chunk 4b addendum at the bottom of `evidence\week-16\week16-failure-predictions.txt` (commit it alone first).

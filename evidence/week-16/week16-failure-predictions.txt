@@ -183,3 +183,44 @@ C3-8  laravel.log growth (staging, LOG_LEVEL=info)
 
 C3-9  Not done in chunk 3a (stated so nobody expects it)
       The optional volume run, the 20-minute run and the compression and page-load measurement (P5). Fixes (chunk 5). The MySQL-stopped test (chunk 4).
+
+
+==========================================================================================
+Chunk 3 ADDENDUM 2 (drafted 2026-11-14 by Claude AFTER the counted baseline and BEFORE the ordinary, peak and spike runs.
+Commit this file alone, before the ordinary run. The commit time is the developer's record.)
+==========================================================================================
+What happened to the earlier predictions: the baseline (counted, 0 errors) came out ABOVE the top of every predicted p95 range, by about 2.5 times (login) to 7 times (/up and ready). The earlier text stays unchanged and is a miss. Cause, as far as it is known: about 600 ms per request is spent outside the Laravel handler (the handler's own timing is about 265 ms for GET /equipment; /up, which has no handler work or database, takes about 630 ms in k6). OPcache is probably not loaded (`php -m` shows no opcache). That is a suspicion, not a result.
+The workload models and the D5 thresholds are NOT changed. The runs below are done as planned. Where the baseline already proves a threshold cannot be met, that is said here before the run.
+Method for the numbers below: service time per request S = about 0.85 s (median seen in the baseline, one request at a time). The server handles one request at a time, so its capacity is about 1 / S = 1.1 to 1.2 requests per second. In a closed test with N users who each wait for an answer, the average answer time is about N x S minus the think time Z, once the server is saturated. These are back-of-envelope figures, not measurements.
+
+C3b-1  setup() duration
+       31 sleeps of 7 s = 217 s plus 32 logins at about 1.6 s = 51 s: about 4 min 30 s (range 4 min 15 s to 5 min). No 429.
+
+C3b-2  Ordinary (5 users, think time 5 to 15 s, measured 300 s)
+       - Offered load: 5 users, a pass of about 1.9 requests, about 1.7 s of service per pass, plus 10 s think = about 11.7 s per pass: about 0.43 passes per second, 0.8 journey requests per second, plus 0.2 per second from the monitor. About 1.0 request per second in all. The server is busy about 85 to 90% of the time, so requests sometimes wait for each other.
+       - D5 reads p95 under 800 ms: MISSED. The baseline alone gave 1,194 ms for reads (about 95% sure).
+       - D5 writes p95 under 1500 ms: about 55% MISSED (baseline writes p95 was 1,193 ms; any queueing pushes it over).
+       - p95 over all requests 1.5 to 3.5 s; median 0.9 to 1.5 s. Errors 0 (at most 1%). Business rejections 0 to 5. 429 none.
+       - php (the artisan serve processes) 60 to 95% of one core; mysqld under 15%; caddy under 5%; k6 under 15%. Memory flat.
+       - The earlier prediction "p95 within 1.5 times the baseline value of the same endpoint" is also MISSED, by the same reason.
+
+C3b-3  Peak (25 users, think time 2 to 5 s, measured 300 s)
+       - Offered load if the server were fast: about 12 requests per second. The server can do 1.1 to 1.2. So the server is saturated from the first minute and k6 slows down.
+       - Throughput in the measured phase: 1.0 to 1.3 requests per second (the earlier "6 to 10 per second" is a MISS; it assumed 100 to 150 ms per request).
+       - Average answer time about 25 x 0.85 - 3.5 = about 18 s (range 12 to 25 s). p95 over all 15 to 30 s. The D5 peak threshold (p95 under 2000 ms) is MISSED (about 99% sure).
+       - Errors: k6 gives up on a request after 60 s. I expect no timeouts in the measured phase (about 85%). Error rate under 2% is expected to hold. Business rejections 5 to 40.
+       - php close to 100% of one core, the first resource to run out. The bottleneck is a single-threaded server with a fixed cost per request (P4 and P6). No other process is near its limit.
+       - Journey requests in the measured 300 s: about 300 to 380 (about 160 to 200 passes, 6 to 8 per user). The earlier request counts for peak do not apply.
+
+C3b-4  Spike (0 to 40 users in 30 s, hold 1 min, down in 30 s, observation to 4 min)
+       - The queue grows to about 40 requests; average answer time about 40 x 0.85 - 3.5 = 30 s during the hold (range 20 to 45 s). The probe and the monitor are slow too (their requests wait in the same queue). Some answers may take over 60 s and time out: I rate the chance of at least one timeout at about 30%. Error rate under 5%.
+       - Recovery (replaces the earlier "within 30 s back under 300 ms"): after the users drop to 0 the queue needs about 30 to 40 s to drain. The probe returns to the baseline range (under about 1.3 s) within 60 to 90 s after the drop, not earlier. /up and readiness answer 200 throughout, only slowly.
+       - 429: none.
+
+C3b-5  Data integrity after each run: unchanged from C3-7 (checks 1, 2, 2b, 5 return no rows; `created_201` equals the rows added). Reason to expect it holds even under saturation: transactions with row locks and one request at a time.
+
+C3b-6  laravel.log growth: ordinary 150 to 400 KB; peak and spike 100 to 400 KB each (far fewer requests than the earlier 1 to 3 MB prediction, because the server finishes far fewer). Above 5 MB would be a surprise.
+
+C3b-7  New candidate P6: "a fixed cost of about 600 ms on every request". Candidates inside it: OPcache not loaded (about 60% the main cause), Laravel boot work on every request under the built-in server, antivirus scanning PHP files, Caddy and TLS (about 5 to 20 ms, unlikely). The sampler will show whether php uses CPU for that time (CPU-bound: P6 is in PHP) or sits idle (it is waiting on something else). Chunk 5 prediction (made now so it is on record): enabling OPcache for the built-in server cuts the `/up` median from about 630 ms to under 380 ms (about 60% sure); if it does not, the cost is elsewhere and P6 stays open. php.ini is outside the repository, so the evidence records the exact setting changed and how to undo it.
+
+C3b-8  Run time. Ordinary and peak: about 4 min 30 s setup + 6 min run + up to 1 min finishing = about 11 to 12 min each. Peak may end later than 6 min because slow requests are still being answered when the stages end (gracefulStop 30 s). Spike: about 4 min 30 s + 4 min = about 9 min.

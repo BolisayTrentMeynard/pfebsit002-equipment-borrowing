@@ -73,3 +73,24 @@ Chunk 5 - Fixes, backup restore and rollback
  Rollback rehearsal (Week 16 build back to the week-15 tag):
     - No destructive migration is added this week, so going back to the week-15 tag runs against the same database. If a migration was added (an index), it is rolled back first with `migrate:rollback --step=1`.
     - After the rollback `/up` answers 200, `/api/health/ready` does not exist (404) because it is a Week 16 route, and the Week 15 Postman collection passes. The test for readiness is expected to fail on the old code, and that is the proof that the rollback really went back.
+
+
+==========================================================================================
+Chunk 1 ADDENDUM (drafted 2026-11-14 by Claude BEFORE the developer runs the chunk 1 tests and checks.
+Commit this file alone, before running anything from chunk 1. The commit time is the developer's record.)
+==========================================================================================
+Honest note: Claude ran the new tests in its own sandbox with SQLite (not MySQL, not Windows) and saw 82 passed. So the test count below is NOT a blind prediction. What is still unknown is how it behaves on the developer's MySQL, Caddy and Windows setup. Those are the things worth predicting.
+
+C1-1  php artisan test (MySQL, equipment_borrowing_test)
+      Prediction: 82 passed (61 from Week 15 plus 21 new: OperationsTest 14, OperationsDownTest 3, NotifierTimeoutTest 4). The new database-down tests point the connection at 127.0.0.1 port 1, so they never touch the real test database and fail fast (connection refused). Risk: on MySQL the refused connection could take longer than on SQLite; the whole run should still finish in about the Week 15 time (about 90 s) plus a few seconds.
+
+C1-2  Readiness over HTTPS (dev setup, Caddy on 8443): curl.exe --ssl-no-revoke -i https://localhost:8443/api/health/ready
+      Prediction: HTTP 200, body exactly {"status":"ok"}, headers include Cache-Control: no-store, private and X-Content-Type-Options: nosniff, no X-Powered-By. /up also 200.
+
+C1-3  php artisan ops:status (dev setup, MySQL running)
+      Prediction: a table with Environment local, Debug mode ON (dev .env), Database reachable, Queue driver database, Jobs waiting a small number or 0, Failed jobs 0 unless old demo failures remain, Manual handling backlog 0 unless demo data remains, and a Log file size in KB. Exit code 0 ($LASTEXITCODE in PowerShell). It prints no key, token or email.
+
+C1-4  Request log line (dev setup): after a few calls through the app or curl
+      Prediction: laravel.log gets one "http.request" line per API call with method, route pattern (for example api/requests/{borrowRequest}), status, ms and correlation_id. The login call shows the largest ms (bcrypt, rounds 12). A call to an unknown API path shows route "unmatched" with correlation_id null. A search of the new lines for Bearer, token, password and an email address finds nothing in the http.request lines (other older lines such as auth.login_ok hold a user_id, as before).
+
+C1-5  Not checked in chunk 1 (stated so nobody expects it): the real MySQL-stopped behavior of readiness (chunk 4), the seeder against a real staging database (chunk 2), and timings (chunk 3). The seeder and the timeout test are covered by PHPUnit only.

@@ -87,7 +87,7 @@ No partial write was found. This was not a test of a crash, only of a normal sto
 Other counts in the new text: 199 `http.request` lines with 200, 12 with 201, 1 each with 401, 404, 409 x2, and 3 with 503.
 
 ## Sampler (`outage-resources.csv`)
-Not seen by Claude. The developer has the CSV on the PC (git-ignored). Whether the sampler was stopped with Ctrl+C is not confirmed. Not used in this sheet.
+Checked by the developer on 2026-11-14 (night): `outage-resources.csv` has 589 lines (a header and 588 rows, four processes per sample, about one sample every 5 s). First row 12:36:02 UTC (20:36:02 PHT), last row 12:48:37 UTC (20:48:37 PHT) with k6 at 0 processes, so the sampler was stopped about 12 s after k6 ended (k6 summary written 20:48:25 PHT). Claude has not read the rows and they are not used in this sheet. The CSV is git-ignored.
 
 ## Flutter app during the outage (optional)
 Not done. No claim is made about what the app shows when the database is down.

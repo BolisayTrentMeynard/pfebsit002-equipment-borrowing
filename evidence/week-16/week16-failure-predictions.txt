@@ -94,3 +94,45 @@ C1-4  Request log line (dev setup): after a few calls through the app or curl
       Prediction: laravel.log gets one "http.request" line per API call with method, route pattern (for example api/requests/{borrowRequest}), status, ms and correlation_id. The login call shows the largest ms (bcrypt, rounds 12). A call to an unknown API path shows route "unmatched" with correlation_id null. A search of the new lines for Bearer, token, password and an email address finds nothing in the http.request lines (other older lines such as auth.login_ok hold a user_id, as before).
 
 C1-5  Not checked in chunk 1 (stated so nobody expects it): the real MySQL-stopped behavior of readiness (chunk 4), the seeder against a real staging database (chunk 2), and timings (chunk 3). The seeder and the timeout test are covered by PHPUnit only.
+
+
+==========================================================================================
+Chunk 2 ADDENDUM (drafted 2026-11-14 by Claude BEFORE the developer runs the staging release.
+Commit this file alone, before running anything from chunk 2. The commit time is the developer's record.)
+==========================================================================================
+Honest note: Claude could not run ANY of this (no PHP, Flutter, Caddy, PowerShell or Windows in its sandbox). The release script and the Caddyfile were checked only for balanced brackets and plain ASCII, and the Laravel behaviors they rely on (`APP_ENV` selects `.env.staging`, it passes through `artisan serve`, `config:show` prints a single value) were read in the Laravel 12 source. Every item below is a guess. A wrong guess stays in the record.
+
+C2-1  Guard (script step 3) with a filled `backend\.env.staging` and APP_ENV=staging set by the script
+      Prediction: Laravel reports app.env = staging, app.debug = false, database = equipment_staging, and the script continues. If `.env.staging` is missing or a value is wrong, the script stops in step 2 or 3 BEFORE any reset.
+      Optional demo (C7 in the checklist): in a plain window with no APP_ENV, `php artisan config:show database.connections.mysql.database` shows equipment_borrowing, which is exactly the accident the guard prevents.
+
+C2-2  Release run, first time (includes the Flutter release build)
+      Prediction: finishes with `RESULT: staging is up`. Build time 1 to 4 minutes (the first dev launch took about 116 s in Week 13). `main.dart.js` 1.5 to 4 MB. Total `build\web` size: under 10 MB if CanvasKit is fetched from Google's CDN, 25 to 40 MB if it is bundled. I cannot say which one this Flutter version does; the capture will show it. `migrate:fresh --seed` about 10 to 30 s. A run with `-SkipBuild` takes about 20 to 60 s in total.
+      Most likely hiccup (I rate it about 40%): something small the first time, such as a missing key in `.env.staging`, the database not created, or Caddy not found on PATH. The guard and the checks are written to stop with a plain message instead of half-running.
+
+C2-3  Health checks through Caddy on https://localhost:9443 (curl.exe --ssl-no-revoke)
+      - /up .......................... 200, header Via: 1.1 Caddy, no X-Powered-By
+      - /api/health/ready ............ 200, body exactly {"status":"ok"}, Cache-Control no-store
+      - /api/nope .................... 404 with JSON {"message":"Not found."} (it must reach Laravel, not the static files)
+      - / ............................ 200, HTML
+      - /main.dart.js ................ 200
+      - /some/page ................... 200 and the same HTML as / (single-page-app fallback, on purpose)
+      - No Content-Encoding header on any answer (compression is off on purpose so P5 can be measured in chunk 3)
+
+C2-4  ops:status on staging (end of the script)
+      Prediction: Environment staging, Debug mode off, Log level info, Database reachable, Queue driver database, Jobs waiting 0, Failed jobs 0, Reminders PENDING 0, Manual handling backlog 0, Log file size small, exit code 0. Fresh seed, nothing has run yet.
+
+C2-5  Week 15 Postman collection against staging, fresh data, environment "Equipment Borrowing (staging HTTPS)"
+      Prediction: 149 tests, 149 passed, 0 failed, 0 errors, about 2 min 20 s to 2 min 50 s (the 61 s wait is inside that). Nothing in the collection depends on the log level or the port. I rate the chance of exactly 149/149 on the first counted run at about 75%. The likeliest misses are setup mistakes, not code defects: the dev environment selected by mistake, data not reset, an empty `password` value. A run that fails for such a reason is recorded and not counted, as in Week 15.
+
+C2-6  Regression suites on the staged code (run in a NEW window where APP_ENV is not set)
+      - php artisan test: 82 passed (chunk 2 adds no PHP), about 100 to 135 s.
+      - flutter test: +15 All tests passed.
+      Risk: if APP_ENV=staging were still set in that window, PHPUnit would not force `testing`. The checklist says to check `echo $env:APP_ENV` first.
+
+C2-7  New-request form on the staged build (Chrome, https://localhost:9443/)
+      Prediction: desktop (about 1280 px) and narrow (360 px) both show the whole form with no overflow and no layout error; the address bar shows localhost:9443 and a secure connection. The Week 15 widget test already passes at 360 px, but a release build in a real browser has not been looked at, so a surprise is possible (about 15%).
+      Also expected: the DevTools Network tab (Fetch/XHR) shows calls to https://localhost:9443/api/..., not 8443.
+
+C2-8  Not checked in chunk 2 (stated so nobody expects it)
+      Timings and load (chunk 3), compression and page-load size as a measurement (chunk 3), MySQL stopped (chunk 4), a queue worker on staging, dump restore and rollback (chunk 5).

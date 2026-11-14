@@ -136,3 +136,50 @@ C2-7  New-request form on the staged build (Chrome, https://localhost:9443/)
 
 C2-8  Not checked in chunk 2 (stated so nobody expects it)
       Timings and load (chunk 3), compression and page-load size as a measurement (chunk 3), MySQL stopped (chunk 4), a queue worker on staging, dump restore and rollback (chunk 5).
+
+
+==========================================================================================
+Chunk 3 ADDENDUM (drafted 2026-11-14 by Claude BEFORE the developer runs any k6 script.
+Commit this file alone, before running anything from chunk 3. The commit time is the developer's record.)
+==========================================================================================
+Honest note: Claude could not run k6 (not installed in its sandbox, no PHP, no Windows). The k6 scripts were only syntax-checked and run against a small fake API written in JavaScript, to test the script logic (journeys, counters, guards). The first real run may show a script error that the fake API could not show. Such a run is recorded and not counted, as in Weeks 15 and 16.
+This addendum adds to the chunk 3 section above (B, O, P, S, V, E). It does not replace it. Where it refines a number, the reason is given and BOTH stay in the record.
+
+C3-1  Smoke test (loadtest\k6\smoke.js: 1 user, 1 pass, read-only, about 15 to 25 s)
+      Prediction: passes with no errors. k6 accepts Caddy's local certificate WITHOUT --insecure-skip-tls-verify, because k6 (Go) uses the Windows certificate store, where Caddy's CA has been installed since Week 14. I rate that about 80%. If it fails with "x509: certificate signed by unknown authority", the fallback is loopback HTTP (-e BASE_URL=http://127.0.0.1:8001) and the evidence says so. Checking is never switched off.
+
+C3-2  setup() duration (32 logins in the ordinary, peak and spike runs)
+      Prediction: 31 sleeps of 7 s = 217 s, plus 32 logins at 0.3 to 0.8 s = about 10 to 26 s, so about 3 min 50 s to 4 min 15 s before the first virtual user starts. No 429 in setup (7 s spacing allows at most 9 logins in any one minute; the limit is 10).
+
+C3-3  Baseline (loadtest\k6\baseline.js)
+      Refines the earlier B prediction and adds endpoints that had none:
+      - Errors 0. All 30 POST /requests answer 201, so `created_201` = 30 and `borrow_requests` has 30 rows afterwards.
+      - New, no earlier prediction (same reasoning as the other reads): GET /requests/{id} p95 60 to 250 ms, GET /custody p95 60 to 250 ms, GET /manual-handling p95 60 to 250 ms, GET /requests?status=PENDING (approver, up to 30 rows) p95 60 to 300 ms.
+      - The first repeat is slower than the rest (cold start, as the 389 ms readiness call in chunk 1), so max is 2 to 5 times the median for most endpoints. This is not a defect.
+      - GET /requests for borrower 01 grows from 0 to 29 rows during the repeats; I expect no visible effect on latency.
+      - 30 paced logins: no 429. p95 inside the earlier 250 to 800 ms range; the median close to the p95 (bcrypt cost is steady).
+
+C3-4  Ordinary (5 users): the offered load, recomputed from the journey weights
+      Average requests per pass about 1.9 (B1 2, B2 about 1.8, B3 2, A1 about 1.7, A2 1, S1 about 2.3). A pass takes the think time (10 s on average) plus about 0.3 s. So about 146 passes in the 300 s measured phase and about 250 to 330 journey requests, plus 60 monitor requests: about 1.0 request per second in total.
+      This is a little ABOVE the "0.5 to 1" in workload-models.md. The model document is not edited; the difference is recorded here and in the results.
+      Everything else stays as in O: all D5 thresholds pass, errors 0, p95 within 1.5 times the baseline value of the same endpoint.
+      Business rejections (409 or 422): 0 to 5 in total. Reason: the chance that two of 5 users pick the same pending request inside one second is small.
+
+C3-5  Peak (25 users): refinement
+      Offered load if the server were infinitely fast: 25 users / about 3.8 s per pass x 1.9 requests = about 12 requests per second. A single-threaded server at 100 to 150 ms per request can finish about 7 to 10 per second. So the queue builds, k6 slows down (a user waits for its answer before the next step), and the achieved throughput settles at 6 to 10 requests per second in the measured phase.
+      Prediction: p95 over all requests 1.5 to 6 s. The 2000 ms threshold is MISSED (I now rate that about 60%; the earlier 50/50 stands as the earlier statement). Errors under 2% (no timeouts, because k6 waits up to 60 s).
+      Business rejections: 10 to 80 (more users choosing the same pending, approved or released request; they are 409 and 422, not errors).
+      Resources: php (artisan serve) 80 to 100% of one core; k6 20 to 60% of one core (k6 shares the PC, so its own cost is in the numbers); mysqld 10 to 40%; caddy under 15%. Memory flat.
+
+C3-6  Spike (0 to 40 users): refinement
+      Probe (GET /equipment every 5 s, one user): latency during the hold minute 2 to 8 s; within 30 s after the users drop to 0 it is back under 300 ms. Readiness and /up answer 200 throughout, but their own latency also rises during the hold.
+      Borrowers 31 to 40 reuse the tokens of 1 to 10: 422 answers for a duplicate open request appear (counted as business rejections). No 429.
+
+C3-7  Data integrity after each counted run (loadtest\integrity-check.sql)
+      Prediction: checks 1, 2, 2b and 5 return 0 rows in every run. `created_201` in the k6 summary equals `borrow_requests_total` when the run started on a fresh reset. `audit_logs_total` is at least `writes_ok` and exceeds it by about the number of returns (each return writes two audit rows: return and close). Reason for confidence: every state change runs inside a transaction with a row lock, and the server handles one request at a time.
+
+C3-8  laravel.log growth (staging, LOG_LEVEL=info)
+      Prediction: each request adds one `http.request` line (about 250 to 350 bytes) and write requests add one or two `workflow.state_changed` lines. Ordinary: under 300 KB. Peak and spike: 1 to 3 MB each. A growth above 10 MB in one run would be noted as P3.
+
+C3-9  Not done in chunk 3a (stated so nobody expects it)
+      The optional volume run, the 20-minute run and the compression and page-load measurement (P5). Fixes (chunk 5). The MySQL-stopped test (chunk 4).

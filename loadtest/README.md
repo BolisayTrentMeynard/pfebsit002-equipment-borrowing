@@ -151,3 +151,34 @@ Checks 1, 2, 2b, 5 (first file) and 6, 7, 8 (second file) print nothing when all
 ## Chunk 4b: second short outage, no load (closes the not-done checks of chunk 4)
 
 No PHP, Dart or k6 file changes. No k6, no sampler, no reset. The two STAGING windows (API 8001, Caddy 9443) must be running; MySQL must be running. About 15 minutes. Steps are in the chat hand-over; the predictions are the chunk 4b addendum at the bottom of `evidence\week-16\week16-failure-predictions.txt` (commit it alone first).
+
+
+## Chunk 5: improvements, before and after, regression, backup, rollback, scans
+
+No Dart file changed. PHP changed in two files (`backend\bootstrap\app.php`, `backend\config\database.php`) plus the new test `Week16Chunk5Test.php`. The predictions are the chunk 5 addendum at the bottom of `evidence\week-16\week16-failure-predictions.txt`: **commit that file alone first**, before any run, and keep the commit line with its time.
+
+| File | What it is |
+|------|-----------|
+| `measure-latency.ps1` | one login, then 30 calls each to `/up`, readiness, equipment, requests; p50, p95, max. For the OPcache before and after |
+| `db-fail-timing.php` | how long one refused connection takes (closed port 3399, plain PHP). Never touches MySQL |
+| `recovery-poll.ps1` | readiness about once per second, S and G keys mark your Stop and Start clicks, summary at the end |
+| `..\deploy\backup-restore.ps1` | mysqldump, restore into a scratch database, compare every table |
+| `..\deploy\rollback-rehearsal.ps1` | `-Action Start` runs the week-15 code (git worktree) on port 8001; `-Action Cleanup` removes it |
+| `..\deploy\scan-secrets.ps1` | repeats the AC-20 and AC-24 scans and the new token-hash check; counts only |
+
+Order used in the session (details are in the hand-over): pre-flight and predictions commit, backup and restore, tests first, fix tests, database failure timing, OPcache before, OPcache on, OPcache after, ordinary and peak after, recovery poll, regression, rollback, scans, commit.
+
+Keep `LOAD_TEST_PASSWORD`, `.env`, `.env.staging`, dumps (`pfebsit002-backups\`) and the Authorization header out of every screenshot and out of the repo.
+
+### OPcache (php.ini, outside the repo)
+Find the file PHP really loads: `php --ini` (line "Loaded Configuration File"). In that file the [OPcache] settings must be active (no `;` in front):
+```
+zend_extension=opcache
+opcache.enable=1
+opcache.enable_cli=1
+opcache.memory_consumption=128
+opcache.max_accelerated_files=10000
+opcache.validate_timestamps=1
+opcache.revalidate_freq=2
+```
+Close the STAGING API window and start it again (the setting is read when `php` starts). Check: `php -m | findstr /i opcache` must now print `Zend OPcache`. This also applies to the development server and to `php artisan test`. To go back: put the `;` in front of the `zend_extension=opcache` line again and restart the API window. Keep a copy of php.ini first.

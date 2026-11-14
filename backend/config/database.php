@@ -61,6 +61,9 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+                // Week 16 chunk 5: optional connect timeout in seconds (DB_CONNECT_TIMEOUT). Unset = PHP's
+                // default (60 s for a database that does not answer). It does not change a refused connection.
+                PDO::ATTR_TIMEOUT => (int) env('DB_CONNECT_TIMEOUT', 0),
             ]) : [],
         ],
 

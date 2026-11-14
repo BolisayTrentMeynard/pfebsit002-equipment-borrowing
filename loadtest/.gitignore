@@ -1,0 +1,3 @@
+# Raw run output stays on the developer's PC (summaries are copied into the evidence by hand after a check).
+results/*
+!results/.gitignore

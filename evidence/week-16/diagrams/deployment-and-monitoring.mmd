@@ -1,0 +1,43 @@
+flowchart TB
+    subgraph Tools["Developer PC: test tools (not part of the system)"]
+        K6["k6 v2.4.0<br/>setup logs in 32 fake users, paced<br/>tokens in memory only"]
+        Samp["PowerShell sampler<br/>CPU and memory every 5 s"]
+        Rel["Release script<br/>build, migrate, start, health check"]
+    end
+    subgraph Staging["Local staging (same PC, stated limit)"]
+        Caddy["Caddy HTTPS<br/>serves Flutter release build<br/>and proxies /api"]
+        API["Laravel API<br/>APP_ENV=staging, APP_DEBUG=false<br/>php artisan serve, single-threaded"]
+        Worker["Queue worker<br/>reminder jobs"]
+        DB[("MySQL<br/>equipment_staging")]
+        Log[/"laravel.log<br/>http.request line:<br/>route, status, ms, correlation id"/]
+    end
+    subgraph Signals["Monitoring signals and owner: developer"]
+        Live["Liveness: GET /up<br/>no database"]
+        Ready["Readiness: GET /api/health/ready<br/>200 ok or 503 fail"]
+        Ops["ops:status<br/>jobs, failed jobs, manual handling"]
+        Alert{"Threshold crossed?<br/>readiness 503, errors over 2%,<br/>p95 over target, failed jobs over 0"}
+    end
+    Human(["Developer as operator<br/>decides: wait, restart, roll back"])
+    Backup[/"mysqldump<br/>restore to scratch DB"/]
+    Rollback["Rollback<br/>git checkout week-15 tag"]
+
+    K6 -- "baseline, ordinary, peak, spike" --> Caddy
+    Caddy -- "plain HTTP, this machine only" --> API
+    API <--> DB
+    DB --> Worker
+    API -- "safe log lines" --> Log
+    Samp -. "samples" .-> API
+    Samp -. "samples" .-> DB
+    Samp -. "samples" .-> Caddy
+    Rel --> Caddy
+    Live --> Alert
+    Ready --> Alert
+    Ops --> Alert
+    Log --> Alert
+    API --- Live
+    API --- Ready
+    DB --- Ready
+    Alert -- "yes" --> Human
+    Human --> Rollback
+    DB -- "backup" --> Backup
+    Backup -- "restore check" --> Human

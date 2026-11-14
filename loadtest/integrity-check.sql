@@ -1,6 +1,6 @@
 -- Week 16, chunk 3: data integrity check after a counted load run. READ ONLY (SELECT statements only).
 -- Run against the STAGING database only. In phpMyAdmin pick the database equipment_staging first, or from PowerShell:
---   & 'C:\xampp\mysql\bin\mysql.exe' -u root equipment_staging -t < loadtest\integrity-check.sql
+--   & 'C:\xampp\mysql\bin\mysql.exe' -u root equipment_staging -t -e "source loadtest/integrity-check.sql"
 -- Fake data only. Nothing here prints a name, an email or a token.
 -- Expected: checks 1, 2, 2b and 5 return ZERO rows; check 3 and 4 are comparisons you do with the k6 summary
 -- (see the lines at the bottom of loadtest\results\<run>-summary.md).

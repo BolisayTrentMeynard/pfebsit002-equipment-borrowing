@@ -70,9 +70,9 @@ Wait for the end-of-run table. The first 4 minutes are the logins in `setup()` (
 
 **f. Integrity check** (read-only, staging database only):
 ```
-& 'C:\xampp\mysql\bin\mysql.exe' -u root equipment_staging -t < loadtest\integrity-check.sql
+& 'C:\xampp\mysql\bin\mysql.exe' -u root equipment_staging -t -e "source loadtest/integrity-check.sql"
 ```
-Checks 1, 2, 2b and 5 should print nothing (no rows). If root has a password, paste the file into phpMyAdmin with `equipment_staging` selected.
+A check that finds nothing prints nothing (no table at all); only the database name, the two totals, the action counts and the status counts print. A table under checks 1, 2, 2b or 5 is a problem: send it. If root has a password, paste the file into phpMyAdmin with `equipment_staging` selected.
 
 **g. Results.** `loadtest\results\<run>-summary.md` is the table to send. Keep `-summary.json`, the CSV and the console file on your PC.
 

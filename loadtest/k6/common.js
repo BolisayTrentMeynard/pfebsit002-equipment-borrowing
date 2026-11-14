@@ -39,6 +39,10 @@ export const serverErrors = new Counter('http_5xx_seen');
 export const otherUnexpected = new Counter('other_unexpected');
 export const loginFails = new Counter('login_failures');
 
+// Chunk 4 (additive): a script may set hooks.onResponse(res, ep, kind) to see every recorded answer.
+// Unset in the baseline, ordinary, peak and spike runs, so their behavior did not change.
+export const hooks = { onResponse: null };
+
 export const TREND_STATS = ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'];
 
 const READ_OK = http.expectedStatuses(200);
@@ -98,6 +102,7 @@ function record(res, ep, kind, phase) {
     if (kind === 'read') latReads.add(ms);
     if (kind === 'write') latWrites.add(ms);
   }
+  if (hooks.onResponse) hooks.onResponse(res, ep, kind);
 }
 
 // ---- setup(): log in the fake accounts once, one about every 7 s, so the login limit (10 per minute per IP) stays ON ----

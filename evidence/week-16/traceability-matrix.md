@@ -55,3 +55,13 @@ Layers: **K** = k6 load script, **U** = PHPUnit (`php artisan test`), **P** = Po
 | AC-46 | `environment-comparison.md`; `.env.staging.example` notes; `deploy/staging-release.ps1` refuses anything but `APP_ENV=staging`, `APP_DEBUG=false`, `equipment_staging` | Capture showing the guard passing; optional demo of the dev database name without `APP_ENV` | Planned |
 | AC-47 | `deploy/Caddyfile.staging`, `deploy/staging-release.ps1`, `deployment-checklist.md`, `postman/` staging environment | Release run output, 82 and 15 tests, Postman 149 on staging, new-request form at desktop and narrow width | Planned |
 | P5 (support) | Compression left off in the Caddyfile on purpose; build and `main.dart.js` size printed by the script | Measurement in chunk 3 | Planned |
+
+## Part F: Chunk 4 status (written 2026-11-14; nothing run by Claude)
+| Criterion | Built in chunk 4 | Still needs the developer's run | Result |
+|-----------|------------------|---------------------------------|--------|
+| AC-48 | `loadtest/k6/failure.js` (ordinary workload, cues, per-phase tables, pass/fail only before the stop and after the guard window), chunk 4 predictions addendum | One run with MySQL stopped and started by hand; manual checks M1 to M6; capture of the cues and tables | Run 2026-11-14, counted with a deviation: no 5xx before; 100% 5xx during; late Start; see `failure-test-results.md` |
+| AC-48 (no partial write) | `loadtest/integrity-check-extra.sql` (checks 6 to 8) beside the standard checks | Output after the run | Done: 12 requests, 12 submit rows, no rows from checks 6 to 8 |
+| AC-43 (manual part) | Manual checks M1 (`/up`) and M2 (readiness) during the outage | Captures | Planned |
+| AC-44 (log safety under error) | `loadtest/scan-outage-log.ps1` (counts, masked samples) | Scan output; expected finding: a token hash may appear in exception text | Done: 22 token-hash lines found (limit recorded); no Bearer, email or password |
+| AC-45 | `monitoring-map.md` (signals, thresholds, owner, decision table, walkthrough IW-1 to IW-10) | Walkthrough actuals from the same run | Run: detection took 99 s (threshold corrected); M3 to M6 not done |
+

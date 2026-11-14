@@ -284,3 +284,21 @@ C4-9  Detection from the signals alone (AC-45; written before the run, scored in
 
 C4-10 Not tested in chunk 4 (stated so nobody expects it)
       The queue-worker-stopped failure (cut under C3). A slow database (a lock, a slow disk) instead of a stopped one. A crash of MySQL (a hard kill) instead of a normal Stop in XAMPP: a crash can need table recovery and is not covered. An outage longer than 2 minutes. A failure during the peak load. A failure of Caddy or of the PHP server. Failover (there is no second database). Alerts that reach a person by themselves (the monitor prints to a terminal; the developer reads it).
+
+
+=====================================================================
+CHUNK 4 ACTUAL RESULTS (added after the run, 2026-11-14 evening; the predictions above were committed as c25e6ec at 19:43:49 +0800 and are NOT edited)
+Source: developer's screenshots; Claude ran nothing. Full numbers in failure-test-results.md.
+Run notes: attempt 1 aborted (k6 in a window without the password); attempt 2 was a control run (MySQL never stopped, 0 errors); the counted run started 20:40:38 PHT. MySQL stopped 20:43:36, started 20:47:24 (about 1 min 46 s after the Start cue), so the outage lasted 3 min 48 s instead of 2 min. Counted as a documented deviation.
+
+C4-1  HIT, one small miss: before phase 97 answers, 0 5xx, readiness 200 on all 10 polls, /up 200 on all 10. p95 2.80 s (predicted 1.5 to 2.5 s: slightly high).
+C4-2  Body and status HIT: readiness 503 with exactly {"status":"fail"}, no-store. MISS on timing: first 503 seen 99 s after the stop (predicted 10 to 25 s) because that poll took 53.4 s to answer. /up 200 on every poll HIT (only 1 poll during the outage; 4 of 4 after), but /up was slow (37.8 s).
+C4-3  MISS on both hypotheses. A failing call took about 40 to 55 s (user p50 42.8 s, p95 49.7 s); H2 said 2.5 to 3.5 s, H1 under 1 s. Answers in the 100 s "during" window: 10 user + 1 /up + 1 readiness = 12 (predicted 35 to 45 or about 100). The cause was not measured.
+C4-4  HIT: 10 of 10 user answers during the outage were 5xx (100%), 0 "other" (no 401, 502, 504 or timeout; the slowest answer was 55.0 s, under k6's 60 s). The response body text was NOT captured (M4 not done), so "generic body, no SQL" is untested for the API answers; the log shows 500 for all 22 failed user calls.
+Manual checks: M1 200 (39.7 s) HIT; M2 503 {"status":"fail"} no-store (40.7 s) HIT; M3, M4, M5, M6 NOT DONE.
+C4-5  HIT: borrow_requests_total 12 = created_201 12; submit_audit_rows 12 = 12; no rows from the integrity checks shown; audit total 42 = 37 k6 writes + 5 close rows (a return writes two audit rows).
+C4-6  Recovery: MISS (faster than predicted): MySQL running 20:47:25, first readiness 200 at 20:47:30 (6 s after the click; predicted 10 to 30 s). The "after" thresholds FAILED (8 user 5xx, 1 readiness 503) because the late Start click left MySQL down at the start of the "after" window. That is not evidence of a recovery fault. 0 answers of 401.
+C4-7  Log: new text 606.6 KB HIT; ERROR entries 22 (predicted 30 to 40 or about 100) MISS; http.request 500 lines 22 = k6 user 5xx 22 HIT; health.ready_failed 3 = 2 + M2 HIT; token hash in 22 lines HIT (finding: AC-44 limit); Bearer 0, email 0, password 0 HIT; 44 of 44 connection frames hide the password HIT.
+C4-8  NOT DONE (app check).
+C4-9  Partly confirmed: readiness detected the outage (99 s after the stop), the log located it (22 ERROR entries with SQLSTATE 2002). `ops:status` was not run during the outage, so its role in locating the fault is untested. The "10 to 25 s" detection claim was wrong in this setup.
+C4-10 Unchanged. Also not done: M3 to M6, a rerun with a Start on time.

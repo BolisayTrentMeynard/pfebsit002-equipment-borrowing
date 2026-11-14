@@ -1,6 +1,6 @@
 # Week 16 Evidence Index: Performance, Reliability and Deployment
 
-Status (2026-11-14): In progress. Chunk 0 (design documents) and chunk 1 (readiness, request log, `ops:status`, load-test seeder, notifier timeout test, staging env example) are tested, committed and pushed. Chunk 2 (local staging: Caddyfile, release script, environment comparison, deployment checklist, Postman staging environment) is written and waits for the developer's run. Nothing has been measured yet; every result column in the matrices says "Planned". Raw captures (screenshots, terminal output, k6 summaries) will be on Google Drive in the `Week 16` folder; the link is added below once uploaded.
+Status (2026-11-14, evening): In progress. Chunks 0 to 3 are done, committed and pushed (design, health and logging code, local staging, k6 runs). Chunk 4 (MySQL-stopped failure test) was run and its results are filled in, waiting for the developer's commit. Chunks 5 and 6 (fixes, restore and rollback, evidence round) are not done. Raw captures (screenshots, terminal output, k6 summaries) will be on Google Drive in the `Week 16` folder; the link is added below once uploaded.
 
 Drive folder link: _not added yet_
 
@@ -26,8 +26,16 @@ Backend: `backend/app/Http/Controllers/Api/HealthController.php`, `backend/app/H
 ## Staging files (chunk 2, written, not yet run by the developer)
 `deploy/Caddyfile.staging` (HTTPS on 9443, serves the Flutter release build and proxies `/api/*` and `/up` to the API on 8001), `deploy/staging-release.ps1` (checks, guard, database reset, Flutter release build, starts API and Caddy, health checks). No PHP file changed in chunk 2.
 
+## Failure test and monitoring (chunk 4, run 2026-11-14, results filled in)
+| File | What it is |
+|------|------------|
+| [`monitoring-map.md`](monitoring-map.md) | Signals, where each is read, thresholds (one corrected by the run), owner, decision table, MySQL-outage walkthrough with actuals (AC-45) |
+| [`failure-test-results.md`](failure-test-results.md) | Results of the MySQL-stopped run (AC-48): timeline, per-phase tables, manual checks, data, log scan, findings, misses; counted with a documented deviation (late Start) |
+| `loadtest/k6/failure.js`, `loadtest/scan-outage-log.ps1`, `loadtest/integrity-check-extra.sql` | The failure run, the log scan and the extra data checks (steps in `loadtest/README.md`, chunk 4) |
+| [`week16-failure-predictions.txt`](week16-failure-predictions.txt) | Chunk 4 addendum committed before the run (`c25e6ec`, 19:43:49 +0800), actual results added underneath |
+
 ## Still to come (added as the chunks are done)
-k6 scripts, sampling script and results sheet (chunk 3); failure test and incident walkthrough (chunk 4); fixes, regression, restore and rollback (chunk 5); test matrix, monitoring map, rollback plan, readiness recommendation, interpretation note, updated risk register (chunk 6).
+fixes, regression, restore and rollback (chunk 5); test matrix, monitoring map, rollback plan, readiness recommendation, interpretation note, updated risk register (chunk 6).
 
 ## Commits (as reported by the developer from the terminal)
 _None yet._

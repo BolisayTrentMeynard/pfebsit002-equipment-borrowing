@@ -48,3 +48,10 @@ Layers: **K** = k6 load script, **U** = PHPUnit (`php artisan test`), **P** = Po
 | AC-45 | `OperationsTest`: `ops:status` counts and exit 0; prints no secret | Operator summary |
 | AC-49 | `NotifierTimeoutTest`: timeout is 5 s in config; a timeout is transient with a safe message; 3 attempts then FAILED_NEEDS_HUMAN with 3 HTTP calls; second try succeeds as SENT_AFTER_RETRY | Faked HTTP, no real wait |
 | AC-39, AC-41 (support) | `OperationsTest`: seeder refuses in production and without a 12+ character password; defaults 30 and 50; creates accounts and items, safe to run twice, login works; volume rows are CLOSED and capped at 5000 | Load-test data |
+
+## Part E: Chunk 2 status (written 2026-11-14; nothing run by Claude)
+| Criterion | Built in chunk 2 | Still needs the developer's run | Result |
+|-----------|------------------|---------------------------------|--------|
+| AC-46 | `environment-comparison.md`; `.env.staging.example` notes; `deploy/staging-release.ps1` refuses anything but `APP_ENV=staging`, `APP_DEBUG=false`, `equipment_staging` | Capture showing the guard passing; optional demo of the dev database name without `APP_ENV` | Planned |
+| AC-47 | `deploy/Caddyfile.staging`, `deploy/staging-release.ps1`, `deployment-checklist.md`, `postman/` staging environment | Release run output, 82 and 15 tests, Postman 149 on staging, new-request form at desktop and narrow width | Planned |
+| P5 (support) | Compression left off in the Caddyfile on purpose; build and `main.dart.js` size printed by the script | Measurement in chunk 3 | Planned |

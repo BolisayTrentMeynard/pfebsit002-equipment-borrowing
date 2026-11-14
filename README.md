@@ -32,6 +32,7 @@ To see the project as it was in a given week, open the tag on GitHub, or run `gi
 app/        Flutter Web app
 backend/    Laravel API
 evidence/   Evidence per week (evidence/INDEX.md, then evidence/week-13/ and so on)
+deploy/     Local staging (Week 16): Caddyfile and release script
 README.md
 ```
 
@@ -94,6 +95,16 @@ php artisan queue:work
 ```
 
 Leave `queue:work` running for about 40 seconds so the retries can finish, then stop it with Ctrl+C. Do not use `--stop-when-empty`, because it quits while retries are waiting. The failure switches (`NOTIFIER_TRANSIENT_TAGS`, `NOTIFIER_ALWAYS_FAIL_TAGS`) in `backend/.env` are for demos only.
+
+### Local staging (Week 16)
+
+A second, separate environment on the same PC: its own database `equipment_staging`, `APP_ENV=staging`, `APP_DEBUG=false`, the Flutter **release** build served by Caddy on `https://localhost:9443` with the API behind it (port 8001). Setup (copy `backend/.env.staging.example` to `backend/.env.staging`, add two new keys, never commit it) and the checks are in `evidence/week-16/deployment-checklist.md`. Then, from a standalone PowerShell window in the repo root:
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File deploy\staging-release.ps1
+```
+
+The script checks that Laravel will use `equipment_staging` before it resets anything, builds the app, starts the API and Caddy in their own windows and runs the health checks. It is local and single-threaded; it is not a production deployment (see `evidence/week-16/environment-comparison.md`).
 
 Tests:
 

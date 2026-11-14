@@ -1,0 +1,35 @@
+# Local STAGING web front (Week 16, chunk 2). Run from the repo root with:
+#   caddy run --config deploy\Caddyfile.staging --adapter caddyfile
+# (deploy\staging-release.ps1 starts it for you in its own window.)
+#
+# One origin, two jobs, so the Flutter release build needs no CORS:
+#   /api/* and /up  ->  Laravel on 127.0.0.1:8001 (php artisan serve, APP_ENV=staging)
+#   everything else ->  the Flutter release build in app\build\web
+#
+# "admin off": the dev Caddy (port 8443) already uses Caddy's admin port 2019. A second instance would
+# fail to start with it on. Nothing here needs `caddy reload`.
+# Certificate: Caddy's local CA, already trusted on this PC since Week 14. It is a development
+# certificate, not a production one.
+#
+# Compression is OFF on purpose. Candidate P5 (no compression) must be MEASURED first (chunk 3).
+# If the measurement says it matters, the fix is one line:  encode zstd gzip  inside the site block.
+
+{
+	admin off
+	auto_https disable_redirects
+}
+
+localhost:9443 {
+	tls internal
+
+	@api path /api/* /up
+	handle @api {
+		reverse_proxy 127.0.0.1:8001
+	}
+
+	handle {
+		root * app/build/web
+		try_files {path} /index.html
+		file_server
+	}
+}

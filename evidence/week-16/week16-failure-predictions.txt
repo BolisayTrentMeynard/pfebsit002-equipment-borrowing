@@ -224,3 +224,63 @@ C3b-6  laravel.log growth: ordinary 150 to 400 KB; peak and spike 100 to 400 KB 
 C3b-7  New candidate P6: "a fixed cost of about 600 ms on every request". Candidates inside it: OPcache not loaded (about 60% the main cause), Laravel boot work on every request under the built-in server, antivirus scanning PHP files, Caddy and TLS (about 5 to 20 ms, unlikely). The sampler will show whether php uses CPU for that time (CPU-bound: P6 is in PHP) or sits idle (it is waiting on something else). Chunk 5 prediction (made now so it is on record): enabling OPcache for the built-in server cuts the `/up` median from about 630 ms to under 380 ms (about 60% sure); if it does not, the cost is elsewhere and P6 stays open. php.ini is outside the repository, so the evidence records the exact setting changed and how to undo it.
 
 C3b-8  Run time. Ordinary and peak: about 4 min 30 s setup + 6 min run + up to 1 min finishing = about 11 to 12 min each. Peak may end later than 6 min because slow requests are still being answered when the stages end (gracefulStop 30 s). Spike: about 4 min 30 s + 4 min = about 9 min.
+
+
+==========================================================================================
+Chunk 4 ADDENDUM (drafted 2026-11-14 by Claude BEFORE the developer runs the MySQL-stopped failure test.
+Commit this file alone, before running anything from chunk 4. The commit time is the developer's record.)
+==========================================================================================
+Honest note: Claude could not run ANY of this (no PHP, MySQL, k6, Caddy, PowerShell or Windows in its sandbox). The new k6 script (loadtest\k6\failure.js) was run only against stub modules and a fake answer function, to check its phase counting, cues and tables. The log scan script (loadtest\scan-outage-log.ps1) was only read through, not run. Every item below is a guess. A wrong guess stays in the record.
+This addendum refines the "Chunk 4" section written on 2026-11-14 morning. That section was written BEFORE the baseline showed about 0.85 s per request, so its speed statements are out of date; the text above stays unchanged and BOTH stay in the record. Where the two differ, this addendum is the one that is scored.
+
+The run (one k6 run, ordinary workload, MySQL stopped and started by hand in the XAMPP Control Panel)
+  setup() about 4 min 30 s of paced logins (as in chunk 3), then 450 s of load. Seconds from the start of the load: warm-up 0 to 60; "before" 60 to 180; CUE stop MySQL at 180; "stopping" guard 180 to 200; "during" 200 to 300; CUE start MySQL at 300; "starting" guard 300 to 330; "after" 330 to 450. A request counts in the phase where its ANSWER arrived. Whole run about 12 to 13 minutes. The monitor polls /up and readiness every 10 s, the same as the ordinary run, so the offered load is the same (about 1 request per second).
+
+C4-1  "Before" phase (2 minutes)
+      Prediction: same as the ordinary run. 0 answers of 5xx, readiness 200 on every poll (about 12 polls), /up 200 on every poll. User answers p95 1.5 to 2.5 s (the ordinary run gave 1.99 s for reads). About 80 to 110 user requests.
+
+C4-2  Readiness and liveness during the outage (the monitor, one poll every 10 s)
+      Prediction: the first readiness poll after the stop answers 503, with the body exactly {"status":"fail"} (no host, no error text, no version). It is seen within 10 to 25 s of the click (poll gap 10 s plus queueing). /up answers 200 on EVERY poll during the whole outage (about 95% sure): it never touches the database. It must not be used as the readiness signal; this is the reason AC-43 has two endpoints.
+      The cue time and the real click time differ by a few seconds (a person clicks). The real stop time is the MONITOR line plus the manual checks, not the cue.
+
+C4-3  How fast an answer is when the database is down (the one number I cannot reason out; two hypotheses)
+      H2 (my pick, about 60%): on Windows a refused TCP connection to 127.0.0.1 takes about 2 s to be reported (several SYN tries). Each API call that needs the database then takes about 2 s (the connect attempt) plus about 0.6 s fixed cost = 2.5 to 3.5 s, and it ends as a 500.
+      H1 (about 40%): the refusal is immediate. A failing call takes only the fixed cost, 0.6 to 0.9 s, FASTER than a normal call (0.85 s) because no query runs.
+      Under H2 the single-threaded server is saturated: capacity is about 1 / 2.6 s = 0.38 requests per second against an offered load of about 1 per second. With 5 users (about 1.9 requests per pass, 10 s think time) and 1 monitor user, a closed-loop estimate gives an average answer time of about 10 s (range 7 to 13 s) and a throughput of about 0.4 answers per second, so only about 35 to 45 answers arrive in the 100 s "during" phase (about 30 to 38 of them user requests, 3 to 4 polls of each monitor endpoint), instead of about 100 in a normal phase.
+      Under H2 /up and readiness are ALSO slow during the outage (they queue behind the failing calls): median 5 to 12 s, although /up still answers 200. "Liveness stays 200" is true; "liveness stays fast" is not. Under H1 they stay at 0.6 to 1.0 s and about 100 answers arrive.
+      Whichever one is true, the measured number goes into the results, and the other hypothesis is recorded as a miss.
+
+C4-4  What the users get during the outage
+      Prediction: at least 95% of the user requests in "during" are HTTP 500 with the generic JSON body {"message":"Server Error"} (APP_DEBUG is false). No SQL, no host, no path and no stack trace in the body; the security headers (nosniff, no-store) are still present. The other answers are 0% of 401 (a token cannot be checked without the database, so it must NOT look like "your session ended"; it is a 500, and the Flutter app must show "Something went wrong" with Try again, not the login screen), 0 of 502 or 504 (the PHP server is up), 0 timeouts at 60 s (about 90% sure).
+      Manual checks (during the outage, one window):
+        M1 GET /up                                   -> 200 (HTML "Application up")
+        M2 GET /api/health/ready                     -> 503, body {"status":"fail"}, Cache-Control no-store
+        M3 GET /api/me with NO Authorization header  -> 401 {"message":"Unauthenticated."} (no database needed to see that no token was sent)
+        M4 GET /api/me with a made-up token          -> 500 {"message":"Server Error"} (the token lookup needs the database)
+        M5 php artisan ops:status (APP_ENV=staging)  -> table shows Database NOT REACHABLE, Jobs waiting, Failed jobs, Reminders PENDING and Manual handling backlog as "unknown (database down)", Debug mode off, Log level info; exit code 1; no error text
+        M6 Get-Process mysqld                        -> error "Cannot find a process" (mysqld is gone); the sampler's mysqld count is 0 from the stop to the start
+      M1 to M4 are queued behind the load on the single-threaded server, so their curl time is long under H2.
+
+C4-5  No partial write (after the run)
+      Prediction: integrity checks 1, 2, 2b and 5 print nothing, and the new checks 6, 7 and 8 (loadtest\integrity-check-extra.sql) print nothing. `borrow_requests_total` equals the 201 answers counted by k6 (`created_201`), or exceeds it by at most 1 or 2. Reason for the allowance: POST /requests loads the equipment AFTER the commit, so a stop in that gap would give a 500 for a row that exists, and a request still in flight when the load ends is counted by the server but not by k6 (the same small unexplained gap seen in the spike, 30 against 24). A larger difference, or any row printed by checks 6, 7 or 8, is a finding. `submit_audit_rows` equals `borrow_requests_total`.
+
+C4-6  Recovery
+      Prediction: after the start cue MySQL accepts connections within 5 to 20 s. The first readiness 200 is seen 10 to 30 s after the click. No restart of php, Caddy or the k6 run is needed (the PHP server opens a new connection for each request). In "after" (330 to 450 s): 0 answers of 5xx, 0 other unexpected answers, 0 readiness 503, 0 answers of 401 (the tokens made in setup() are rows in MySQL and the database was only stopped, not reset). User p95 in "after" back inside 1.5 to 3 s (a little above the ordinary 2 s is possible: MySQL restarts with an empty buffer pool). These are exactly the pass/fail thresholds in failure.js.
+      The "starting" guard window (300 to 330) may still hold a few 5xx answers: under H2 about 5 requests are queued at the start cue and each takes 2.6 s to fail, so the backlog needs about 13 s to drain even after MySQL is back.
+
+C4-7  laravel.log during the outage (scan from the byte offset noted before the run)
+      Prediction:
+      - One ERROR entry with a stack trace per failed API call that needed the database: about 30 to 40 under H2, about 100 under H1 (not counting the readiness failures, which are logged as one WARNING line each).
+      - `http.request` lines with status 500 match the 500 answers k6 saw (difference at most 2); `health.ready_failed` lines with check "database" equal the readiness 503 answers seen by k6 plus the manual M2 calls.
+      - Log growth 0.3 to 1.5 MB under H2 (each trace 8 to 30 KB), 1 to 3 MB under H1.
+      - FINDING EXPECTED (AC-44, R12): the exception text most likely holds the SQL with its bound values, so the hash of the made-up and load-test tokens (a 64-character hex string) appears in the log. I rate that about 75%. It is a hash, not the token (the plain token is never in the SQL), so it cannot be used to log in, but it is not the "nothing sensitive in the log" claim that AC-44 makes for the http.request line. It would be recorded as a limit of AC-44 and a candidate fix for chunk 5, not hidden.
+      - "Bearer": 0 lines. An email-shaped string: 0 lines (the run does no login). "password": 0 lines, because PHP 8.2 marks the password argument of the database connection as sensitive and hides it in traces (about 70% sure). The http.request lines themselves hold no secret, as in chunk 1.
+
+C4-8  Flutter app during the outage (optional, one manual check; log in BEFORE starting k6, as a borrower on https://localhost:9443)
+      Prediction: while MySQL is down, pressing Refresh or switching tab shows "Something went wrong" with a plain message (no SQL, no table name) and a Try again button. It does NOT show the login screen and does NOT show "Cannot reach the server" (that title is only for a network error; the server answers 500 here). After the start cue, Try again loads the list WITHOUT logging in again. If the first Try again after the restart still fails, press it once more and record that.
+
+C4-9  Detection from the signals alone (AC-45; written before the run, scored in monitoring-map.md)
+      Prediction: with only the signals in the monitoring map, the outage is detected by readiness (the next poll, 10 to 25 s) and located by `ops:status` ("Database NOT REACHABLE") and by the log (ERROR entries with SQLSTATE and http.request 500). The correct decision is "start MySQL", NOT "restart php or Caddy". The latency signal is the weakest: under H2 it also rises, but it points to saturation, not to the database.
+
+C4-10 Not tested in chunk 4 (stated so nobody expects it)
+      The queue-worker-stopped failure (cut under C3). A slow database (a lock, a slow disk) instead of a stopped one. A crash of MySQL (a hard kill) instead of a normal Stop in XAMPP: a crash can need table recovery and is not covered. An outage longer than 2 minutes. A failure during the peak load. A failure of Caddy or of the PHP server. Failover (there is no second database). Alerts that reach a person by themselves (the monitor prints to a terminal; the developer reads it).

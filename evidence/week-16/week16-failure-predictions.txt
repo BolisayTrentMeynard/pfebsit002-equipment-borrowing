@@ -1,0 +1,75 @@
+Week 16 - Predictions (to be committed ALONE and BEFORE any measurement or failure run)
+
+Student: Bolisay Trent Meynard, BSIT 3A
+Project: #5 Equipment Borrowing Reminder System
+Date drafted: 2026-11-14 (by Claude, from reading the code in the 2026-11-11 clean zip; NOTHING has been run or measured).
+Commit this file by itself as the first commit on branch week-16-deployment. The commit time is the developer's record. Write the hash and time into lab-log.md afterwards, in a later commit.
+Environment: one Windows PC, XAMPP MySQL (MariaDB), PHP 8.2 `php artisan serve` (single-threaded), Caddy on HTTPS, k6 v2.4.0 on the same PC as the system it tests.
+Rule: predictions for chunks 3, 4 and 5 are added here BEFORE those chunks run (one addendum, committed alone, per chunk). Actual results go underneath later. Wrong predictions stay in the record.
+
+These numbers are guesses from reading the code and general knowledge of PHP's built-in server on Windows. They are NOT measurements. Where a range is given, the real value may fall outside it; that is a finding, not a mistake to hide.
+
+Chunk 3 - Load runs (current code plus the chunk 1 additions only; nothing optimised yet)
+
+ B  Single-user baseline (1 virtual user, one request at a time, 30 repeats each)
+    - /up (liveness, no database) .............. p95 20 to 120 ms
+    - /api/health/ready ........................ p95 30 to 150 ms
+    - login (bcrypt check, plus token insert) .. p95 250 to 800 ms. The slowest single call.
+    - GET /equipment (50 rows) ................. p95 60 to 250 ms
+    - GET /requests (borrower, few rows) ....... p95 60 to 250 ms
+    - POST /requests ........................... p95 100 to 400 ms
+    Reason: each request boots Laravel again on the built-in server (no opcache assumption), then one to three queries. Errors: 0.
+
+ O  Ordinary workload (5 users, think time 5 to 15 s)
+    - Offered load is about 0.5 requests per second. The server is idle most of the time.
+    - Prediction: all D5 thresholds pass (reads p95 under 800 ms, writes p95 under 1500 ms, errors under 1%). Expected errors: 0. Expected p95 within 1.5 times the single-user baseline for the same endpoint.
+    - Resource use: php (artisan serve) busy well under 50% of one core; mysqld small. No growth in memory over 5 minutes.
+    - Data check after the run: no borrower with two open requests for one item, no item released twice, count of 201 answers in k6 equals the number of new rows.
+
+ P  Peak workload (25 users, think time 2 to 5 s)
+    - Offered load is roughly 7 to 10 requests per second. A single-threaded server answering in about 100 ms per request can do about 10 per second at best, so the server sits close to saturation.
+    - Prediction: this is the first run where queueing shows. p95 for reads 600 to 3000 ms (I rate it about 50/50 that the 2000 ms peak threshold is missed). Writes slower than reads. Errors under 2% (timeouts are unlikely because k6 waits up to 60 s).
+    - php stays near 100% of one core. This is the bottleneck, and the evidence should name it as a limit of this setup (P4), not as a code defect.
+    - Data check after the run: no corruption. Duplicate-request answers (422) are business rejections and are counted apart from errors.
+
+ S  Spike (0 to 40 users in 30 s, hold 1 min, down in 30 s, 2 min observation)
+    - Prediction: latency climbs while the user count climbs and the queue builds; p95 above the peak run; some answers take over 5 s. Errors under 5%. Because the login limit stays on and tokens are made in setup(), no 429 from login is expected during the spike.
+    - Recovery: within 60 s after the user count drops, single-request latency returns to the baseline range. The readiness endpoint answers 200 throughout (the database is never down in this run).
+
+ V  Volume run (5,000 requests in the database; OPTIONAL, dropped first under the cut order)
+    - Prediction: P1 is confirmed. GET /requests and GET /custody for an approver or staff user return every row, so they slow down to over 1 s and the response grows to megabytes. Borrower lists stay small because they filter by user. Writes and detail views barely change.
+
+ E  Short endurance (20 min at the ordinary level; OPTIONAL; NOT a real endurance test)
+    - Prediction: no memory growth worth noting in php or mysqld, log file grows about 1 line per request. If the log (LOG_LEVEL=debug, one file) grows by tens of megabytes it is noted as P3. A 20-minute run cannot show slow leaks and the evidence says so.
+
+ Bottleneck candidates (from the plan; each one is confirmed or disproved by measurement, not assumed)
+    P1 unbounded lists ............ expected to be CONFIRMED at volume, hardly visible with the seed data
+    P2 last_used_at update on each call ... expected NOT significant alone (one small UPDATE, under 10% of a request); disproving it is an acceptable result
+    P3 database cache/queue/sessions, debug logging ... expected to matter little for the reads; visible in log size
+    P4 single-threaded server ..... expected CONFIRMED as the main limit at peak; stated as a limit, not fixed
+    P5 Flutter release size, no compression at Caddy ... expected visible on first load only; measured by file size and page load in the browser
+
+Chunk 4 - Failure test: MySQL stopped during the ordinary workload
+
+ Run: start the ordinary workload (5 users). After about 2 minutes stop MySQL in the XAMPP Control Panel. Keep the load running 2 minutes. Start MySQL again. Keep the load running 2 more minutes.
+ Prediction, outage:
+    - /up keeps answering 200 (it does not use the database). It must not be used as the readiness signal.
+    - /api/health/ready answers 503 with a body that holds only ok/fail (no host, no error text) on the first check after the stop.
+    - Every API call that needs the database (login, token lookup, throttle counters in the database cache, lists) answers 500 with a generic JSON body and no stack trace, because APP_DEBUG=false. I expect the answers to be fast (connection refused), not slow timeouts.
+    - Error rate in k6 during the outage is close to 100% for API calls. No partial writes: a POST that did not return 201 left no row.
+    - laravel.log gets exception lines. They may include the SQL text and bound values (for example an email or a token hash). If they do, that is a finding for the log-safety criteria (AC-44) and R12; it would be recorded, not hidden.
+ Prediction, recovery:
+    - After MySQL is back the API recovers WITHOUT restarting php or Caddy, within about 10 s. Readiness returns to 200 within one poll. Tokens made in setup() still work (they are rows in MySQL, and the database was only stopped, not reset). Rows written before the stop are still there.
+ Optional second failure (queue worker stopped): reminder jobs wait in the jobs table and nothing is lost; readiness stays 200 because it only checks that the queue table is reachable. If this is not run, the evidence says so.
+
+Chunk 5 - Fixes, backup restore and rollback
+
+ Before/after:
+    - After the P1 fix (default cap on list size, `data` key unchanged) the volume-run list latency falls clearly (prediction: at least 50% lower p95 at 5,000 rows) and the response size falls with it. Seed-data runs change little, within measurement noise (about 10 to 20%).
+    - If P2 is changed, the improvement at peak is small (under 10%). If measurement shows under 5%, the change is not kept and the reason is written down.
+    - The Week 15 Postman collection (149 tests) and `php artisan test` (61 tests) still pass after the fixes, plus the new tests added in this week. The Flutter tests (15) still pass.
+ Backup and restore:
+    - mysqldump of equipment_staging restores into a scratch database with the same table list and the same row counts for requests, equipment, users and audit logs.
+ Rollback rehearsal (Week 16 build back to the week-15 tag):
+    - No destructive migration is added this week, so going back to the week-15 tag runs against the same database. If a migration was added (an index), it is rolled back first with `migrate:rollback --step=1`.
+    - After the rollback `/up` answers 200, `/api/health/ready` does not exist (404) because it is a Week 16 route, and the Week 15 Postman collection passes. The test for readiness is expected to fail on the old code, and that is the proof that the rollback really went back.

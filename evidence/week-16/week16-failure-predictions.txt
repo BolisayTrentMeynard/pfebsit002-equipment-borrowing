@@ -302,3 +302,21 @@ C4-7  Log: new text 606.6 KB HIT; ERROR entries 22 (predicted 30 to 40 or about 
 C4-8  NOT DONE (app check).
 C4-9  Partly confirmed: readiness detected the outage (99 s after the stop), the log located it (22 ERROR entries with SQLSTATE 2002). `ops:status` was not run during the outage, so its role in locating the fault is untested. The "10 to 25 s" detection claim was wrong in this setup.
 C4-10 Unchanged. Also not done: M3 to M6, a rerun with a Start on time.
+
+
+=====================================================================
+CHUNK 4b PREDICTIONS ADDENDUM (written 2026-11-14 evening, AFTER the chunk 4 run and BEFORE the second short outage; to be committed alone before anything is run)
+What this is: a second, short MySQL outage with NO k6 load, to do what the first run could not: manual checks M3 to M6, `ops:status` during an outage, and the Flutter app during an outage. Nothing is built or changed in the code. MySQL is stopped and started by hand in the XAMPP Control Panel (MySQL row only; Apache is left alone). Staging is NOT reset. One person, one request at a time.
+
+New idea from the first run (H3): in the first run only 12 answers arrived in the 100 s "during" window while about 6 clients were waiting on a single-threaded server, so one failing call probably takes about 6 to 9 s by itself, and the 40 s answers were mostly QUEUEING behind other failing calls. I did not measure this; this run tests it, because with no load there is no queue.
+
+C4b-1  Unloaded, M1 `/up` (needs no database) answers 200 in 0.4 to 1.5 s (about 85% sure). In the first run it took 39.7 s only because it queued.
+C4b-2  Unloaded, M2 readiness answers 503 with exactly {"status":"fail"}, no-store. Time: 4 to 12 s (H3, about 55%); under 2 s (about 20%, refusal is quick); over 20 s (about 25%, the wait per call is itself long). Whichever it is goes into the results.
+C4b-3  M3 `/api/me` with NO Authorization header: 401 {"message":"Unauthenticated."} in under 2 s (about 80%), because no token means no database lookup and `/api/me` has no throttle (checked in routes/api.php). Alternative (20%): a 500 after the same wait as M2 because something else touches the database first.
+C4b-4  M4 `/api/me` with a made-up token: 500, body exactly {"message":"Server Error"} (no SQL, no host, no path, no stack trace), with the security headers; time like M2 (4 to 12 s under H3). It must NOT be 401 (a token cannot be checked without the database).
+C4b-5  M5 `php artisan ops:status` with APP_ENV=staging: table shows Database "NOT REACHABLE" (exact wording as in the command), the counts rows "unknown (database down)", Debug mode off, Log level info, exit code 1, no error text or stack trace in the output (about 75%). Time 3 to 20 s (one failed connection, maybe two).
+C4b-6  M6 `Get-Process mysqld` prints an error ("Cannot find a process"), instantly (about 95%). This is the direct proof that MySQL was down.
+C4b-7  Flutter app (signed in as loadborrower01 BEFORE the stop, tab on "My requests"): while MySQL is down, pressing Refresh or switching tab shows a loading spinner, then "Something went wrong" with a plain message and a Try again button (about 65%). Not the login screen (a 500 is not a 401). If the call takes longer than the app's 15 s limit, it shows "Cannot reach the server" instead (about 25%); record whichever appears. No SQL, table name or host on screen (about 95%).
+C4b-8  After MySQL is started: the first readiness 200 within 1 to 10 s of the Start click (the first run gave 6 s). In the app, Try again loads the list WITHOUT signing in again (about 90%; the token is a row in the database and the database was only stopped).
+C4b-9  No data change: no write is made in this run, so `borrow_requests_total` stays 12 (or the same number as at the start; the developer writes it down from `integrity-check.sql` before and after, optional).
+C4b-10 Not tested here (stated so nobody expects it): load, the queue worker, a MySQL crash, longer outages, a fix for the slow failing call (a candidate for chunk 5).

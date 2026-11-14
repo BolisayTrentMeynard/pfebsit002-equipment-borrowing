@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BorrowRequestController;
 use App\Http\Controllers\Api\CustodyController;
 use App\Http\Controllers\Api\EquipmentController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\ManualHandlingController;
 use App\Http\Controllers\Api\NotifierReceiverController;
 use App\Models\User;
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 // Week 15 hardening (DEF-06): ids in the URL are digits only, so "1abc" is a 404, not request 1.
 Route::pattern('borrowRequest', '[0-9]+');
 Route::pattern('reminderNotification', '[0-9]+');
+
+// Week 16: readiness (database and queue table). Liveness is Laravel's built-in /up. No login, no throttle.
+Route::get('/health/ready', [HealthController::class, 'ready']);
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 

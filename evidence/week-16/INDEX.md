@@ -1,6 +1,6 @@
 # Week 16 Evidence Index: Performance, Reliability and Deployment
 
-Status (2026-11-14): In progress. Chunk 0 (design documents, no code) is written. Nothing has been built, run or measured yet; every result column says "Planned". Raw captures (screenshots, terminal output, k6 summaries) will be on Google Drive in the `Week 16` folder; the link is added below once uploaded.
+Status (2026-11-14): In progress. Chunk 0 (design documents) is committed and pushed. Chunk 1 (readiness, request log, `ops:status`, load-test seeder, notifier timeout test, staging env example) is written and waits for the developer's run. Nothing has been measured yet; every result column in the matrices says "Planned". Raw captures (screenshots, terminal output, k6 summaries) will be on Google Drive in the `Week 16` folder; the link is added below once uploaded.
 
 Drive folder link: _not added yet_
 
@@ -17,8 +17,11 @@ Drive folder link: _not added yet_
 | [`test-data-plan.md`](test-data-plan.md) | Fake data, seeder guard, resets, backups, capture hygiene |
 | [`week16-failure-predictions.txt`](week16-failure-predictions.txt) | Predictions for chunks 3 to 5, committed before each run, with actual results added underneath later |
 
+## Code changed in Week 16 (chunk 1, built, not yet run by the developer)
+Backend: `backend/app/Http/Controllers/Api/HealthController.php`, `backend/app/Http/Middleware/LogApiRequest.php`, `backend/app/Console/Commands/OpsStatus.php`, `backend/config/loadtest.php`, `backend/database/seeders/LoadTestSeeder.php`, `backend/bootstrap/app.php` (log middleware), `backend/routes/api.php` (readiness route), `backend/.env.staging.example`, `backend/.gitignore` and `make-clean-zip.bat` (`.env.staging` kept out). Tests: `backend/tests/Feature/OperationsTest.php`, `OperationsDownTest.php`, `NotifierTimeoutTest.php` (21 tests).
+
 ## Still to come (added as the chunks are done)
-Health, timing log, `ops:status` and seeder code with tests (chunk 1); staging release, environment comparison, deployment checklist (chunk 2); k6 scripts, sampling script and results sheet (chunk 3); failure test and incident walkthrough (chunk 4); fixes, regression, restore and rollback (chunk 5); test matrix, monitoring map, rollback plan, readiness recommendation, interpretation note, updated risk register (chunk 6).
+Staging release, environment comparison, deployment checklist (chunk 2); k6 scripts, sampling script and results sheet (chunk 3); failure test and incident walkthrough (chunk 4); fixes, regression, restore and rollback (chunk 5); test matrix, monitoring map, rollback plan, readiness recommendation, interpretation note, updated risk register (chunk 6).
 
 ## Commits (as reported by the developer from the terminal)
 _None yet._

@@ -38,3 +38,13 @@ Layers: **K** = k6 load script, **U** = PHPUnit (`php artisan test`), **P** = Po
 | P3 database cache, queue, sessions; debug log | Contention and log growth | Sampling, log size, AC-41 and AC-42 | Little effect on reads | Planned |
 | P4 single-threaded server | Throughput ceiling | Peak and spike, AC-42 | Main limit at peak; stated, not fixed | Planned |
 | P5 Flutter release size, no compression | Slow first load | Release build size, browser load, AC-47 | Visible on first load only | Planned |
+
+## Part D: Tests added in chunk 1 (written 2026-11-14; run by Claude in its sandbox on SQLite only, so the real result column stays "Planned" until the developer runs them on MySQL)
+| Criterion | Test (file) | What it checks |
+|-----------|-------------|----------------|
+| AC-43 | `OperationsTest`: ready 200 ok without login; ready checks the queue table (503 when the table is missing); liveness is `/up` | Body is exactly ok or fail, no login needed |
+| AC-43 | `OperationsDownTest`: ready 503 with no detail; `/up` still 200; `ops:status` exits 1 | Database unreachable (connection pointed at nothing, not a real MySQL stop) |
+| AC-44 | `OperationsTest`: log line fields; no token, query string, email or body; route pattern hides ids and unknown paths are `unmatched`; non-API calls are not logged by this line | The `http.request` line |
+| AC-45 | `OperationsTest`: `ops:status` counts and exit 0; prints no secret | Operator summary |
+| AC-49 | `NotifierTimeoutTest`: timeout is 5 s in config; a timeout is transient with a safe message; 3 attempts then FAILED_NEEDS_HUMAN with 3 HTTP calls; second try succeeds as SENT_AFTER_RETRY | Faked HTTP, no real wait |
+| AC-39, AC-41 (support) | `OperationsTest`: seeder refuses in production and without a 12+ character password; defaults 30 and 50; creates accounts and items, safe to run twice, login works; volume rows are CLOSED and capped at 5000 | Load-test data |

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ApiTokenAuth;
 use App\Http\Middleware\CorrelationId;
+use App\Http\Middleware\LogApiRequest;
 use App\Http\Middleware\RequireRole;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
@@ -23,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Week 15 hardening: security headers on every response (also error pages and unknown routes).
         $middleware->append(SecurityHeaders::class);
+
+        // Week 16: one structured http.request log line per API call (no personal data).
+        $middleware->append(LogApiRequest::class);
 
         $middleware->alias([
             'api.auth' => ApiTokenAuth::class,

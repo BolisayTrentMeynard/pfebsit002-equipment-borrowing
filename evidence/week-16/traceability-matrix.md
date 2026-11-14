@@ -1,6 +1,6 @@
-# Traceability Matrix v1 (Week 16; written 2026-11-14 before any run)
+# Traceability Matrix (Week 16; v1 written 2026-11-14 before any run, v2 results in Part G added 2026-11-15)
 
-Every requirement or risk is linked to the check that tests it. Every Result column says "Planned". Nothing has been run or measured.
+Every requirement or risk is linked to the check that tests it. Parts A to F are the plan and the chunk status as written at the time (their Result columns say "Planned" or give the interim result and are left as they were). **Part G at the end holds the final results.**
 
 Layers: **K** = k6 load script, **U** = PHPUnit (`php artisan test`), **P** = Postman collection (Week 15, rerun on staging), **F** = Flutter widget test, **M** = manual check or script run by the developer.
 
@@ -65,3 +65,35 @@ Layers: **K** = k6 load script, **U** = PHPUnit (`php artisan test`), **P** = Po
 | AC-44 (log safety under error) | `loadtest/scan-outage-log.ps1` (counts, masked samples) | Scan output; expected finding: a token hash may appear in exception text | Done: 22 token-hash lines found (limit recorded); no Bearer, email or password |
 | AC-45 | `monitoring-map.md` (signals, thresholds, owner, decision table, walkthrough IW-1 to IW-10) | Walkthrough actuals from the same run | Run: detection took 99 s (threshold corrected); M3 to M6 not done |
 
+
+## Part G: Final results (v2, 2026-11-15; written by Claude from the developer's output, nothing run by Claude)
+Details and evidence are in `test-matrix.md`.
+
+| Criterion | Final result | Main limitation |
+|-----------|--------------|-----------------|
+| Part A (AC-01 to AC-38) | Regression: `php artisan test` 86 passed, `flutter test` +15, Postman 149 of 149 on staging (per developer's word) | AC-34 Partial in Week 15 is closed by AC-49 |
+| AC-39 | Pass | Assumed traffic |
+| AC-40 | Pass (recorded; every latency prediction missed) | OPcache off at the time |
+| AC-41 | Pass after OPcache; failed before | php.ini change outside the repo; php CPU of the after run not read |
+| AC-42 | Partial: peak threshold missed before (20.8 s) and after (2,047.5 ms vs 2,000 ms); spike recorded; endurance cut | One single-threaded process |
+| AC-43 | Pass | `/up` stays 200 in a database outage |
+| AC-44 | Pass after fix | Fix proven by PHPUnit, not by a live outage |
+| AC-45 | Pass (manual map, one threshold corrected) | No alert |
+| AC-46 | Pass | Same machine and DB account as dev |
+| AC-47 | Pass | Windows PC only; some screenshots not seen by Claude |
+| AC-48 | Pass with deviations | Normal stop, not a crash; 4b recovery unclean and not counted |
+| AC-49 | Pass | HTTP faked |
+| AC-50 | Partial: one performance fix (OPcache) | P1, P2, P3 not shown; P5 not measured |
+| AC-51 | Partial | Collection not run on the rolled-back code; restore on almost empty data |
+| AC-52 | Pass (document) | Opinion, tabletop on paper |
+| AC-53 | Pass | `password` word hit explained; screenshots, Drive, Postman not scanned |
+
+### Part C candidates, final verdict
+| Candidate | Verdict |
+|-----------|---------|
+| P1 unbounded lists | Not shown; never tested at volume (cut under C3); not fixed |
+| P2 `last_used_at` per call | Not shown; not fixed |
+| P3 database cache and queue, one log file | Not shown by the runs; log growth 57 to 118 KB per run, 606.6 KB in the first outage; not fixed |
+| P4 single-threaded server | Confirmed; stated limit |
+| P5 Flutter release size, no compression | Not measured |
+| P6 fixed per-request cost (no OPcache) | Fixed by a `php.ini` change; consistent with the main cause |

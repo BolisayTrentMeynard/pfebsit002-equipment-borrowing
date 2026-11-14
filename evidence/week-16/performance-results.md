@@ -1,8 +1,8 @@
-# Week 16 Performance Results (template, filled in after each counted run)
+# Week 16 Performance Results
 
-Status: **Baseline, ordinary, peak and spike filled in (2026-11-14).** Optional runs (volume, 20-minute, queue-worker-stopped) not done; the developer decides whether to cut them under C3. Claude fills this sheet from the developer's screenshots and the k6 summary files; it never invents a number. Every run starts from a fresh reset (`deploy\staging-release.ps1 -SkipBuild`, then `LoadTestSeeder`). Runs that fail for a setup reason are listed and not counted.
+Status: **Complete for Week 16 (2026-11-15).** Baseline, ordinary, peak and spike (chunk 3, OPcache off) and the before and after rerun (chunk 5, OPcache on) are filled in. Optional runs (volume, 20-minute, queue-worker-stopped) were CUT under C3 and not done; the spike was not repeated after the change. Claude filled this sheet from the developer's screenshots and terminal output; it never invents a number, and Claude ran no test itself. Every run starts from a fresh reset (`deploy\staging-release.ps1 -SkipBuild`, then `LoadTestSeeder`). Runs that fail for a setup reason are listed and not counted.
 
-Environment (fill in once): one Windows PC, XAMPP MySQL (MariaDB), `php artisan serve` (single-threaded) on 8001 behind Caddy on 9443, k6 v2.4.0 on the same PC, `APP_ENV=staging`, `APP_DEBUG=false`, `LOG_LEVEL=info`. Logical cores: 12 (sampler's first line). CPU model: _developer: still to be added_.
+Environment (fill in once): one Windows PC, XAMPP MySQL (MariaDB), `php artisan serve` (single-threaded) on 8001 behind Caddy on 9443, k6 v2.4.0 on the same PC, `APP_ENV=staging`, `APP_DEBUG=false`, `LOG_LEVEL=info`. Logical cores: 12 (sampler's first line). CPU model: _developer: still to be added_. Chrome version: _developer: still to be added_.
 
 Limits (they stay next to every number): assumed traffic, not real users; the load generator and the system share one PC; one IP address for all fake users; a single-threaded server; times include k6's own CPU use.
 
@@ -111,3 +111,58 @@ From `spike-console.txt` (22 probe lines, all status 200). `t` is seconds since 
 | P4 | Single-threaded server | Peak: php at about 92% of one core (71 of 77 samples at 90% or more), mysqld/caddy/k6 near idle; throughput 1.35 req/s at 25 users; every endpoint, including `/up`, waited 16 to 20 s; spike probe 34 s at 40 users, about users times service time | **Confirmed** as the capacity limit |
 | P5 | Flutter release size, no compression | Not tested: the k6 scripts call the API only, not the Flutter files | Not measured in chunk 3 |
 | P6 | A fixed cost of about 600 ms on every request (OPcache probably not loaded; not proven) | Baseline: `/up` about 630 ms in k6; handler time about 265 ms in the Laravel log; `php -m` shows no OPcache | Suspected, to be tested in chunk 5 with a before and after run. New evidence: at peak php is CPU-bound (about 92% of a core), so the fixed cost is PHP work, not waiting on MySQL or Caddy. That fits OPcache being off but does not prove it |
+
+## Before and after the OPcache change (chunk 5, 2026-11-15)
+Prediction C5-4 and C5-5 were committed first (`8a02169`, 2026-11-14 23:53:06 +0800). The change: `zend_extension=opcache` and six `opcache.*` settings made active in `C:\xampp\php\php.ini` (enable 1, enable_cli 1 (was 0), memory_consumption 128, max_accelerated_files 10000, validate_timestamps 1, revalidate_freq 2), backup kept as `php.ini.bak-before-opcache`, API window restarted. `php -m` showed no OPcache before and Zend OPcache after. The file is outside the repository, so the change is not versioned: see `rollback-and-recovery-plan.md` and R21 in the risk register.
+
+### Single user, 30 repeats each (`loadtest\measure-latency.ps1`; p50 / p95 / max ms)
+This script is a different tool from k6, so its before numbers (for example `/up` 449) are not the k6 baseline numbers (`/up` 630).
+
+| Endpoint | Before (00:02:19) | After, run 1 (00:10:20) | After, run 2 (00:18:21) |
+|----------|-------------------|-------------------------|-------------------------|
+| `/up` | 449 / 644 / 666 | 120 / 198 / 260 | 51 / 178 / 180 |
+| readiness | 640 / 874 / 1,019 | 151 / 278 / 353 | 111 / 295 / 321 |
+| equipment | 742 / 907 / 1,022 | 176 / 260 / 264 | 175 / 254 / 311 |
+| requests list | 732 / 941 / 944 | 145 / 260 / 298 | 181 / 311 / 381 |
+
+All 30 calls per cell answered 200 (0 non-200). The data endpoints fell by about 490 to 590 ms and `/up` by about 330 ms (run 1), so the drop was not the same in milliseconds everywhere (that part of C5-4 was a miss). The two after runs differ by under about 100 ms, which looks like noise. Two runs on one machine: consistent with OPcache being the main cause of the fixed per-request cost, not a proof.
+
+### Ordinary workload (5 users), same script, same data reset
+| Item | Before (chunk 3) | After (chunk 5, start 00:34:50, 10 m 22 s) |
+|------|------------------|---------------------------------------------|
+| Measured requests | 294 (about 1.0 per s) | 340 (1.1 per s) |
+| Errors | 0 | 0 |
+| Reads p95 | 1,999.5 ms | 388.6 ms |
+| Writes p95 | 1,960.1 ms | 267.6 ms |
+| All p95 | 1,987.7 ms | 374.2 ms |
+| Thresholds (reads under 800, writes under 1,500, errors under 1%) | reads and writes FAILED | ALL PASSED |
+| Integrity | clean | clean: 17 requests, 64 audit rows = 54 writes + 10 close rows; statuses APPROVED 4, CLOSED 10, PENDING 1, REJECTED 1, RELEASED 1; 55 items available and 1 on loan |
+
+The whole after run was 395 requests and 194 iterations, with 17 answers of 201 on `POST /requests` and 54 successful writes.
+
+### Peak workload (25 users)
+| Item | Before (chunk 3, ended 19:03) | After (chunk 5, start 00:47:27, 10 m 20.7 s) |
+|------|-------------------------------|----------------------------------------------|
+| Measured requests | 405 (1.35 per s) | 2,544 (8.5 per s) |
+| Errors | 0 | 0 |
+| Business rejections (409 or 422, not errors) | 34 | 79 |
+| Median, all | 17,958.8 ms | 1,276 ms |
+| All p95 | 20,830 ms | 2,047.5 ms (reads 2,048.6, writes 1,982.7) |
+| Threshold `lat_all` p(95) under 2,000 | FAILED | **FAILED by 47.5 ms** |
+| Integrity | output not captured | clean: 141 requests = 141 answers of 201; 570 audit rows = 474 writes + 96 close rows; APPROVED 20, CLOSED 96, REJECTED 25; nothing stuck; 56 items available |
+| Whole run | 544 requests | 2,897 requests, 1,478 iterations, 141 answers of 201, 474 successful writes |
+
+How to read the peak rows: virtual users send the next request after the answer, so a faster server completes more requests with the same 25 users. The two runs did not receive the same number of requests, so compare the latency and throughput the way the table states them, not as a like-for-like load. Every endpoint, `/up` included, sat at about 1.25 s median after the change: consistent with requests waiting behind one single-threaded process (an inference; the queue was not measured). The offered-load estimate of 5 to 6 per s in the prediction was wrong (the server answered 8.5 per s). The php CPU of the after runs was not compared: `ordinary-after-resources.csv` and `peak-after-resources.csv` are on the PC and Claude did not read them.
+
+### Not repeated or not measured after the change
+The spike was not re-run. The volume run, the 20 minute run and the queue-worker-stopped run were cut under C3 (so P1, unbounded lists, was never tested at volume: the data set was 56 items and at most 30 requests). The Flutter release files were not measured (P5). Chunk 4's failure test ran with OPcache off, so its latencies during the outage describe that state.
+
+### Updated verdict on the candidates
+| ID | Verdict after chunk 5 |
+|----|-----------------------|
+| P1 | Not shown by any run; not fixed; never tested at volume |
+| P2 | Not shown by any run; not fixed |
+| P3 | Not shown by any run; not fixed |
+| P4 | Confirmed (single-threaded server); cannot be fixed on `artisan serve`; the peak threshold is still missed by 47.5 ms |
+| P5 | Not measured |
+| P6 | Fixed by enabling OPcache; before and after results are consistent with it being the main cause of the fixed cost, two single-user runs plus ordinary and peak; not a controlled experiment |

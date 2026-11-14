@@ -38,3 +38,9 @@ No server, cloud account or budget is available, and real hosting is outside the
 - The certificate is from a development CA. It shows that HTTPS works, not how a public certificate is obtained and renewed.
 - Staging uses the same database account as development. A production account with limited rights is a target, not something tested.
 - Flutter's release build may load CanvasKit files from Google's CDN unless it is built with `-LocalResources`. If the developer's capture shows that, staging is not fully offline; the lab log records which variant was used.
+
+## Findings from the runs (added in the evidence round, 2026-11-15)
+- **Font from Google's CDN.** On the staged build the Roboto font (`https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Me4GZLCzYlKw.woff2`, 63,464 bytes, status 200 from disk cache) came from Google, so staging is not fully offline. `canvaskit.wasm`, `canvaskit.js` and `main.dart.js` came from localhost (per the developer's DevTools screenshot, 2026-11-14 5:39 PM). The developer also checked that the `login` Request URL was `https://localhost:9443/...`; that screenshot was not sent to Claude.
+- **PHP OPcache.** The XAMPP PHP had no OPcache (`php -m` empty). It was switched on in `C:\xampp\php\php.ini` in chunk 5 (see `performance-results.md`). The file is outside the repo, so a fresh PC would start without it. `enable_cli` was also changed to 1, so `artisan` and PHPUnit run with it too. A production target would set this in its own PHP configuration and keep it in version control or in a build image.
+- **Database account.** Dev and staging both use XAMPP `root` with no password. This was not changed.
+- **Rollback.** Going back to `week-15` leaves the readiness route missing (404); see `rollback-and-recovery-plan.md`.

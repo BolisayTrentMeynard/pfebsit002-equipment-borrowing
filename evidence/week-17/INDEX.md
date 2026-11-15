@@ -1,6 +1,6 @@
 # Week 17 Evidence Index: Final Integration UAT and Evaluation
 
-Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); commit pending. Chunks 4 to 6 are not started.
+Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); committed and pushed (`06f72bd`, `8228cf9`). Chunks 4 to 6 are not started.
 
 Drive folder link: to be added.
 
@@ -44,7 +44,7 @@ Scope of every result: one Windows PC, local staging, fake data, three testers. 
 | 0 Design documents | Committed (`6c3849b`) |
 | 1 OpenAPI, drift test, UAT seed | Committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`); `php artisan test` 120 passed on the developer's MySQL |
 | 2 Tester-independent documents (DR-008 scores, final diagram, evaluation matrix skeleton, maintenance plan, change control, handover README draft) | Committed and pushed (`bfdfa34` 2a, `32840ab` 2b, `07e1f6f` 2c); docs only, no test run |
-| 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); the other files await the developer's commit |
+| 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); other files committed in `8228cf9` |
 | 4 UAT session | Not started |
 | 5 Findings, fixes, retest, regression | Not started |
 | 6 Final assembly, evidence round, tag | Not started |

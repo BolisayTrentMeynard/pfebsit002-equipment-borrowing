@@ -41,7 +41,7 @@ Scope of every result: one Windows PC, local staging (`https://localhost:9443`),
 
 First try of B4 and B6 worked; no failed first try in 3b.
 
-Mismatch to settle before chunk 4 (see `test-data-plan.md`, "Open mismatch"): items in Manual handling after B6 = **3** (ops:status; the developer reports the browser list also showed 3, and 2 remained after one was marked handled). The UAT-08 card says "listed once" and "empty afterwards". Developer's decision (card wording, expectation, or seeder change as its own segment): ____________
+Mismatch to settle before chunk 4 (see `test-data-plan.md`, "Open mismatch"): items in Manual handling after B6 = **3** (ops:status; the developer reports the browser list also showed 3, and 2 remained after one was marked handled). The UAT-08 card says "listed once" and "empty afterwards". Developer's decision (card wording, expectation, or seeder change as its own segment): open, to be decided before chunk 4.
 
 ## 3c The relay run alone (screen recording)
 | Step | Check | Expected | Actual | Result |
@@ -77,4 +77,4 @@ Correction to a chat remark: the chat said notification ids "restart" after a re
 Terminal screenshots of: the addendum commit, `php -m` OPcache line, reset result, `php artisan test` summary, `flutter test` summary, Postman Runner summary, `scan-secrets.ps1` result, `backup-restore.ps1` result, `reminders:run` output (twice), the worker windows (success and failure), the SQL rows after each, `ops:status`; the screen recording (6:04); the 1280 px and 360 px screenshots; the keyboard and zoom notes. Claude renames and files them in chunk 6.
 
 ## Gate for chunk 3
-All green, or each deviation written down above. Developer's statement and date: ____________ (the developer reported all steps completed and passed on 2026-11-15; the statement is theirs to sign off)
+All green, or each deviation written down above. Developer's statement and date: all steps of 3a, 3b and 3c were run and reported passed, with deviations D1 to D10 written down above; stated in chat by the developer on 2026-11-15, who asked Claude to write the record. Committed as `8228cf9`.

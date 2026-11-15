@@ -1,6 +1,6 @@
 # Week 17 Evidence Index: Final Integration UAT and Evaluation
 
-Status (2026-11-15): **In progress.** Chunk 0 (design documents, no code) is written. Nothing has been run. Chunks 1 to 6 are not started.
+Status (2026-11-15): **In progress.** Chunk 0 (design documents, no code) is committed (`6c3849b`; predictions alone in `a67e08b`). Nothing has been run. Chunks 1 to 6 are not started.
 
 Drive folder link: to be added.
 
@@ -24,7 +24,7 @@ Scope of every result: one Windows PC, local staging, fake data, three testers. 
 ## Chunk status
 | Chunk | Status |
 |-------|--------|
-| 0 Design documents | Written, not yet committed |
+| 0 Design documents | Committed (`6c3849b`) |
 | 1 OpenAPI, drift test, UAT seed | Not started |
 | 2 Tester-independent documents (DR-008 scores, maintenance plan, handover draft) | Not started |
 | 3 Pre-UAT readiness | Not started |

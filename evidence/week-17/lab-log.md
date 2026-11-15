@@ -14,7 +14,7 @@
 ## Entries
 - 2026-11-15: Plan approved by the developer (second, stress-tested version; D1 to D13). It was first asked as "week 16", but Week 16 was already done, so Week 17 was planned. Nothing built.
 - 2026-11-15: Chunk 0 files written by Claude from the module, the project guide, the log and the code in the 2026-11-15 clean zip (nothing run): predictions, scope, UAT plan, task cards, observation sheet, acceptance criteria AC-54 to AC-68 (thresholds frozen on commit), traceability matrix v1, DR-007, DR-008 skeleton (weights only, no scores), test data plan, this log, INDEX.
-- Predictions commit (hash and time): to be filled in by the developer after committing `week17-predictions.txt` alone.
+- Predictions commit: `a67e08b`, 2026-11-15 13:10:36 +0800 (`week17-predictions.txt` alone, 1 file, 32 insertions). Chunk 0 documents followed in `6c3849b`.
 - Tester arrangements, session date and sponsor: not decided yet (not recorded here by design; no names in the repo).
 
 ## Threshold changes after freezing

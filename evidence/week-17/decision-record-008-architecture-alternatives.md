@@ -1,6 +1,6 @@
 # Decision Record 008: Architecture alternatives and recommendation (Week 17)
 
-Date: 2026-11-15. Status: **SCORED (chunk 2a), awaiting the developer's review.** Options, criteria, weights and the sensitivity method were fixed and committed in chunk 0 (`6c3849b`) before any score existed; they are unchanged below. The scores, the sensitivity test, the recommendation and the rest were added in chunk 2, after that commit, by Claude from the files in the repository. Nothing was built or measured for B or C.
+Date: 2026-11-15. Status: **SCORED (chunk 2a) and approved by the developer on 2026-11-15; committed in `bfdfa34`.** Options, criteria, weights and the sensitivity method were fixed and committed in chunk 0 (`6c3849b`) before any score existed; they are unchanged below. The scores, the sensitivity test, the recommendation and the rest were added in chunk 2, after that commit, by Claude from the files in the repository. Nothing was built or measured for B or C.
 
 ## Context
 The system is a Flutter Web client and a Laravel API with MySQL, a database-backed queue, a hand-run scheduler and a signed notifier, served from one PC. Week 16 measured its limits (single-threaded server: peak p95 2,047.5 ms against a 2,000 ms target; no automatic alert; scheduler and worker by hand). Week 17 asks for at least two feasible architectures, scored against agreed criteria, with the sensitivity of the recommendation tested (Activity 2).
@@ -57,7 +57,7 @@ Scale and weights are the ones above. Each reason points at evidence that exists
 | Cost (10) | 5 | 4 | 2 | **A:** free tools on a PC already owned. **B:** free software; a real deployment would need a host that is not owned. **C:** a host or managed broker for each extra part |
 | Data ownership (8) | 5 | 5 | 3 | **A and B:** one MySQL database holds requests, audit rows and notification state; one dump restored with 14 of 14 tables matching in the Week 16 rehearsal. **C:** notification state would live in two places and need to be kept in step |
 
-Weighted score (sum of weight x score, divided by 100): **A 3.70, B 3.71, C 2.53.** The arithmetic and every figure in the next section come from `dr008-sensitivity.py`; its output is saved in `dr008-sensitivity-output.txt` (run by Claude in its sandbox with Python 3; the developer has not rerun it).
+Weighted score (sum of weight x score, divided by 100): **A 3.70, B 3.71, C 2.53.** The arithmetic and every figure in the next section come from `dr008-sensitivity.py`; its output is saved in `dr008-sensitivity-output.txt` (run by Claude in its sandbox with Python 3; the developer reran it on the PC on 2026-11-15 and the output was identical).
 
 ## Sensitivity test (method as committed above)
 | Case | A | B | C | Top option |

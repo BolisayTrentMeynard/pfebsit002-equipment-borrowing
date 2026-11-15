@@ -21,7 +21,7 @@ Limits used in the demo: loan of 7 days, at most 3 reminders and 2 escalations p
 | 14 | `week-14` | HTTPS in front of the API, signed (HMAC-SHA256) notifier messages that reject altered, expired and replayed messages, keys kept in `.env`, MySQL instead of SQLite | Done |
 | 15 | `week-15` | Integration testing and security hardening (Postman collection, traceability, nine fixes, regression evidence) | Done |
 | 16 | `week-16` | Performance, reliability and deployment (workload models, load tests, local staging, MySQL-stopped failure test, backup and rollback rehearsal, conditional readiness recommendation) | Done |
-| 17 | `week-17` | Final integration, UAT and evaluation | Not started |
+| 17 | `week-17` | Final integration, UAT and evaluation | In progress |
 | 18 | `week-18` | Final review, demo and technical defense | Not started |
 
 To see the project as it was in a given week, open the tag on GitHub, or run `git checkout week-13`.

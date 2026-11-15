@@ -1,0 +1,860 @@
+openapi: 3.1.1
+info:
+  title: Equipment Borrowing Reminder System API
+  version: 1.0.0-week17
+  summary: Laravel API behind the Flutter Web client (PFEBSIT 002, project 5).
+  description: |
+    The current contract of the API, written from `backend/routes/api.php` and the controllers.
+    It replaces `evidence/week-13/api-contract.md`. A PHPUnit test (`OpenApiDriftTest`) fails when a route and
+    this file disagree. All examples are fictional (`@example.test`); no real person or secret is shown.
+
+    **Authentication.** Every operation needs `Authorization: Bearer <token>` except `GET /health/ready`,
+    `POST /login` and `POST /notifier/receive` (that one is authenticated by a message signature).
+    A token is issued by `POST /login`, is stored hashed on the server and expires after 8 hours.
+    The role (`borrower`, `approver`, `staff`) is read from the stored user, never from the request.
+    Each authenticated operation lists its roles in `x-allowed-roles`.
+
+    **Ids.** Ids in a path are digits only. `/requests/1abc` is a 404, not request 1.
+
+    **Errors are always JSON**, never an HTML page. The shared error responses are under `components/responses`.
+
+    **Headers on every `/api/*` response:** `Cache-Control: no-store, private`, `X-Content-Type-Options: nosniff`,
+    `Referrer-Policy: no-referrer`; there is no `X-Powered-By`. A matched route also returns `X-Correlation-ID`.
+    Known gap: a path that matches no route (a 404 for an unknown path) has no `X-Correlation-ID`.
+  license:
+    name: Coursework, no license granted
+    identifier: LicenseRef-Coursework-NoLicense
+servers:
+  - url: http://127.0.0.1:8000/api
+    description: Local development (`php artisan serve`). Paths below are relative to this URL.
+tags:
+  - name: Health
+    description: Readiness for monitoring. No login.
+  - name: Auth
+    description: Login, current user, logout.
+  - name: Equipment
+    description: Items that can be borrowed.
+  - name: Requests
+    description: Borrow requests and their workflow (PENDING, APPROVED, REJECTED, RELEASED, RETURNED, CLOSED).
+  - name: Custody
+    description: Items currently out on loan.
+  - name: Manual handling
+    description: Notifications that kept failing and need a person.
+  - name: Notifier
+    description: Receiver of signed notifier messages (service to service).
+security:
+  - bearerAuth: []
+paths:
+  /health/ready:
+    get:
+      tags: [Health]
+      operationId: healthReady
+      summary: Readiness (database and, when used, the queue table)
+      description: |
+        200 when this instance can do useful work. 503 when the database (or the queue table, if the queue uses
+        the database) cannot be reached. The body holds only `ok` or `fail`, never a host, version, path or error
+        text. No login and no throttle. Liveness is Laravel's built-in `GET /up` (not part of this contract).
+      security: []
+      responses:
+        '200':
+          description: Ready.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthStatus' }
+              example: { status: ok }
+        '503': { $ref: '#/components/responses/NotReady' }
+  /login:
+    post:
+      tags: [Auth]
+      operationId: login
+      summary: Log in and receive a bearer token
+      description: |
+        Limits: 10 calls per minute per IP address, and 5 failed logins per e-mail address per minute (any letter case).
+        Both answer 429 with a `Retry-After` header. A wrong password and an unknown e-mail give the same 401 answer.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+            example: { email: uatborrower1@example.test, password: example-password-123 }
+      responses:
+        '200':
+          description: Logged in. The plain token is shown only here.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+              example:
+                token: EXAMPLE-TOKEN-not-a-real-credential-0000000000000000
+                expires_in_hours: 8
+                user: { id: 3, name: UAT Borrower One, role: borrower }
+        '401':
+          description: Wrong e-mail or password. The same answer for both.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { message: Invalid credentials. }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /me:
+    get:
+      tags: [Auth]
+      operationId: me
+      summary: The signed-in user
+      x-allowed-roles: [borrower, approver, staff]
+      responses:
+        '200':
+          description: The user of the token.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+              example: { id: 3, name: UAT Borrower One, role: borrower }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Log out (the token is deleted)
+      x-allowed-roles: [borrower, approver, staff]
+      responses:
+        '200':
+          description: The token no longer works.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: Logged out. }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /equipment:
+    get:
+      tags: [Equipment]
+      operationId: listEquipment
+      summary: All equipment, ordered by name
+      x-allowed-roles: [borrower, approver, staff]
+      responses:
+        '200':
+          description: Every item with its status.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Equipment' }
+              example:
+                data:
+                  - { id: 1, name: Projector A, asset_tag: EQ-001, status: available }
+                  - { id: 3, name: Laptop Cart 1, asset_tag: EQ-003, status: on_loan }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /requests:
+    get:
+      tags: [Requests]
+      operationId: listRequests
+      summary: List borrow requests (a borrower sees only their own)
+      x-allowed-roles: [borrower, approver, staff]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Only requests in this status.
+          schema: { $ref: '#/components/schemas/RequestStatus' }
+      responses:
+        '200':
+          description: Newest first.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/BorrowRequestWithRelations' }
+              examples:
+                pending: { $ref: '#/components/examples/RequestList' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    post:
+      tags: [Requests]
+      operationId: createRequest
+      summary: Submit a borrow request (borrower)
+      description: |
+        The item must be `available`, and the borrower must not already have an open request
+        (PENDING, APPROVED or RELEASED) for it. Both rules answer 422 on `equipment_id`.
+      x-allowed-roles: [borrower]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRequest' }
+            example: { equipment_id: 1, reason: Class presentation, requested_days: 2 }
+      responses:
+        '201':
+          description: Created with status PENDING. This body holds the new row and its equipment only.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/BorrowRequestWithRelations' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /requests/{id}:
+    get:
+      tags: [Requests]
+      operationId: showRequest
+      summary: 'One request with its history (a borrower: own requests only)'
+      description: The history shows what happened and when, not who. Only `action`, `from_status`, `to_status` and `created_at` are returned.
+      x-allowed-roles: [borrower, approver, staff]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: The request with `audit_logs`.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/BorrowRequestDetail' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /requests/{id}/approve:
+    post:
+      tags: [Requests]
+      operationId: approveRequest
+      summary: Approve a PENDING request (approver)
+      x-allowed-roles: [approver]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody: { $ref: '#/components/requestBodies/DecisionNote' }
+      responses:
+        '200': { $ref: '#/components/responses/RequestChanged' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /requests/{id}/reject:
+    post:
+      tags: [Requests]
+      operationId: rejectRequest
+      summary: Reject a PENDING request (approver)
+      x-allowed-roles: [approver]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody: { $ref: '#/components/requestBodies/DecisionNote' }
+      responses:
+        '200': { $ref: '#/components/responses/RequestChanged' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /requests/{id}/release:
+    post:
+      tags: [Requests]
+      operationId: releaseRequest
+      summary: Release an APPROVED request to the borrower (staff)
+      description: Stores the due date (end of day, `requested_days` after the release) and sets the item to `on_loan`. 409 also when the item is not available.
+      x-allowed-roles: [staff]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { $ref: '#/components/responses/RequestChanged' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /requests/{id}/return:
+    post:
+      tags: [Requests]
+      operationId: returnRequest
+      summary: Record the return and the inspection; the request becomes CLOSED (staff)
+      description: Two audit entries are written (return, close). A `good` item becomes `available`; `damaged` or `missing_parts` becomes `needs_check`.
+      x-allowed-roles: [staff]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReturnRequest' }
+            example: { inspection_result: good, inspection_notes: Returned complete }
+      responses:
+        '200': { $ref: '#/components/responses/RequestChanged' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /custody:
+    get:
+      tags: [Custody]
+      operationId: listCustody
+      summary: Items currently released to borrowers (approver, staff)
+      x-allowed-roles: [approver, staff]
+      parameters:
+        - name: overdue
+          in: query
+          required: false
+          description: "`1` or `true` shows only the overdue items. Accepts true, false, 1, 0, \"1\", \"0\"."
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Ordered by due date, earliest first.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/CustodyItem' }
+              example:
+                data:
+                  - request_id: 6
+                    equipment: { id: 6, name: Projector Zeta, asset_tag: UAT-006 }
+                    borrower: { id: 2, name: UAT Borrower Two }
+                    due_at: '2026-11-13T15:59:59.000000Z'
+                    overdue: true
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /manual-handling:
+    get:
+      tags: [Manual handling]
+      operationId: listManualHandling
+      summary: Notifications in FAILED_NEEDS_HUMAN, newest first (approver)
+      x-allowed-roles: [approver]
+      responses:
+        '200':
+          description: Only notifications that need a person.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ManualHandlingItem' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /manual-handling/{id}/resolve:
+    post:
+      tags: [Manual handling]
+      operationId: resolveManualHandling
+      summary: Mark a failed notification as handled by a person (approver)
+      description: 409 when the notification is not in FAILED_NEEDS_HUMAN.
+      x-allowed-roles: [approver]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveRequest' }
+            example: { note: Called the borrower by phone }
+      responses:
+        '200':
+          description: The notification, now HANDLED_MANUALLY.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/ReminderNotification' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /notifier/receive:
+    post:
+      tags: [Notifier]
+      operationId: receiveNotifierMessage
+      summary: Accept a signed notifier message
+      description: |
+        Not behind user login. The caller proves itself with the message signature
+        `v1=<hex>` over the text `v1.<message id>.<unix timestamp>.<raw body>` (HMAC-SHA256). The receiver checks in this
+        order: format, signature, timestamp window (default 300 seconds), replay (an id is accepted once).
+        A bad signature and an expired message both answer 401 on purpose. Limit: 60 calls per minute per IP address.
+        The "delivery" is a log line with ids only. A missing or too short signing key on the server answers 500.
+      security:
+        - messageSignature: []
+      parameters:
+        - name: X-Message-Id
+          in: header
+          required: true
+          description: A UUID, unique for each message.
+          schema: { type: string, format: uuid }
+          example: 3f2c9a52-0d4e-4a57-9a43-5d9c1b0e7a11
+        - name: X-Message-Timestamp
+          in: header
+          required: true
+          description: Unix time in seconds, digits only.
+          schema: { type: string, pattern: '^[0-9]+$' }
+          example: '1794744000'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotifierMessage' }
+            example: { notification_id: 12, type: overdue, request_id: 6, recipient_id: 4, attempt: 1 }
+      responses:
+        '202':
+          description: Accepted.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, const: accepted }
+              example: { status: accepted }
+        '400':
+          description: A header is missing or badly formed, or the body lacks `notification_id`, `type` or `recipient_id`.
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageRejected' }
+              example: { message: Message rejected., reason: malformed }
+        '401':
+          description: Bad signature or expired timestamp (the same answer for both).
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageRejected' }
+              examples:
+                bad_signature: { value: { message: Message rejected., reason: bad_signature } }
+                expired: { value: { message: Message rejected., reason: expired } }
+        '409':
+          description: This message id was already accepted (replay).
+          headers:
+            X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageRejected' }
+              example: { message: Message rejected., reason: replayed }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'The token from `POST /login`. Sent as `Authorization: Bearer <token>`. Expires after 8 hours.'
+    messageSignature:
+      type: apiKey
+      in: header
+      name: X-Message-Signature
+      description: |
+        `v1=` followed by the HMAC-SHA256 (hex) of `v1.<X-Message-Id>.<X-Message-Timestamp>.<raw body>`.
+        Used together with the `X-Message-Id` and `X-Message-Timestamp` headers.
+  headers:
+    CorrelationId:
+      description: Server-generated id of this call. It appears in the log lines and audit entries of the call. A client-supplied id is ignored.
+      schema: { type: string, format: uuid }
+    RetryAfter:
+      description: Seconds to wait before trying again.
+      schema: { type: integer, minimum: 0 }
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      description: Digits only. Anything else (for example `1abc`) is a 404.
+      schema: { type: integer, minimum: 1 }
+      example: 1
+  requestBodies:
+    DecisionNote:
+      required: false
+      description: An optional note for the decision. The body may be empty.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/DecisionNote' }
+          example: { note: Approved for the class presentation }
+  examples:
+    RequestList:
+      summary: One PENDING request with its item and borrower
+      value:
+        data:
+          - id: 3
+            user_id: 2
+            equipment_id: 3
+            reason: Photos for the club event
+            requested_days: 3
+            status: PENDING
+            decided_by: null
+            decided_at: null
+            decision_note: null
+            released_by: null
+            released_at: null
+            due_at: null
+            returned_at: null
+            inspection_result: null
+            inspection_notes: null
+            closed_at: null
+            created_at: '2026-11-14T09:00:00.000000Z'
+            updated_at: '2026-11-14T09:00:00.000000Z'
+            equipment: { id: 3, name: Camera Kit Gamma, asset_tag: UAT-003 }
+            borrower: { id: 2, name: UAT Borrower Two }
+  responses:
+    RequestChanged:
+      description: The request after the change (full row). The status shows the new state.
+      headers:
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/BorrowRequest' }
+    Unauthenticated:
+      description: The token is missing, invalid or expired.
+      headers:
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: Unauthenticated. }
+    Forbidden:
+      description: The role is not allowed for this operation, or a borrower asked for someone else's request.
+      headers:
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            wrong_role: { value: { message: This action is not allowed for your role. } }
+            not_owner: { value: { message: You can only view your own requests. } }
+    NotFound:
+      description: No such record, or an unknown path. The text never names an internal model.
+      headers:
+        X-Correlation-ID:
+          description: Present when a route matched (for example a missing record). Absent for a path that matches no route.
+          schema: { type: string, format: uuid }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: Not found. }
+    Conflict:
+      description: The change is not allowed in the current state. Nothing is saved.
+      headers:
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            wrong_status: { value: { message: Cannot approve a request that is RELEASED. } }
+            not_available: { value: { message: This equipment is not available for release. } }
+            not_failed: { value: { message: Only failed notifications can be handled manually (this one is SENT). } }
+    ValidationFailed:
+      description: Validation failed. Nothing is saved.
+      headers:
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationError' }
+          example:
+            message: The requested days field must be between 1 and 7.
+            errors: { requested_days: [The requested days field must be between 1 and 7.] }
+    TooManyRequests:
+      description: A rate limit was reached. Wait for `Retry-After` seconds.
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            per_email: { summary: 'Login: 5 failed tries for one e-mail', value: { message: Too many attempts. Wait a minute and try again. } }
+            per_ip: { summary: Per-IP limit of the route, value: { message: Too Many Attempts. } }
+    ServerError:
+      description: An unexpected error. The body never holds a stack trace, SQL or a host name.
+      headers:
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: Server Error }
+    NotReady:
+      description: The database (or the queue table) cannot be reached. Only the word `fail` is returned.
+      headers:
+        X-Correlation-ID: { $ref: '#/components/headers/CorrelationId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/HealthStatus' }
+          example: { status: fail }
+  schemas:
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    ValidationError:
+      type: object
+      required: [message, errors]
+      properties:
+        message: { type: string }
+        errors:
+          type: object
+          description: One entry per field, each a list of messages.
+          additionalProperties:
+            type: array
+            items: { type: string }
+    Message:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [ok, fail] }
+    Role:
+      type: string
+      enum: [borrower, approver, staff]
+    User:
+      type: object
+      required: [id, name, role]
+      properties:
+        id: { type: integer, minimum: 1 }
+        name: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 255 }
+        password: { type: string, maxLength: 255, writeOnly: true }
+    LoginResponse:
+      type: object
+      required: [token, expires_in_hours, user]
+      properties:
+        token: { type: string, description: 'The plain token, shown once.' }
+        expires_in_hours: { type: integer, const: 8 }
+        user: { $ref: '#/components/schemas/User' }
+    EquipmentStatus:
+      type: string
+      enum: [available, on_loan, needs_check]
+    Equipment:
+      type: object
+      required: [id, name, asset_tag, status]
+      properties:
+        id: { type: integer, minimum: 1 }
+        name: { type: string }
+        asset_tag: { type: string, maxLength: 30 }
+        status: { $ref: '#/components/schemas/EquipmentStatus' }
+    EquipmentRef:
+      type: object
+      required: [id, name, asset_tag]
+      properties:
+        id: { type: integer, minimum: 1 }
+        name: { type: string }
+        asset_tag: { type: string }
+    PersonRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: integer, minimum: 1 }
+        name: { type: string }
+    RequestStatus:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED, RELEASED, RETURNED, CLOSED]
+    InspectionResult:
+      type: string
+      enum: [good, damaged, missing_parts]
+    CreateRequest:
+      type: object
+      required: [equipment_id, reason, requested_days]
+      properties:
+        equipment_id: { type: integer, minimum: 1, description: Must exist and be `available`. }
+        reason: { type: string, minLength: 3, maxLength: 255 }
+        requested_days: { type: integer, minimum: 1, maximum: 7 }
+    DecisionNote:
+      type: object
+      properties:
+        note: { type: [string, 'null'], maxLength: 255 }
+    ReturnRequest:
+      type: object
+      required: [inspection_result]
+      properties:
+        inspection_result: { $ref: '#/components/schemas/InspectionResult' }
+        inspection_notes: { type: [string, 'null'], maxLength: 255 }
+    ResolveRequest:
+      type: object
+      required: [note]
+      properties:
+        note: { type: string, minLength: 3, maxLength: 255 }
+    BorrowRequest:
+      type: object
+      description: |
+        A borrow request row. The first eight fields are always present. The others are present on every
+        row read back from the database and are `null` until the workflow sets them; the answer to
+        `POST /requests` holds only the always-present fields.
+      required: [id, user_id, equipment_id, reason, requested_days, status, created_at, updated_at]
+      properties:
+        id: { type: integer, minimum: 1 }
+        user_id: { type: integer, description: The borrower. }
+        equipment_id: { type: integer }
+        reason: { type: string }
+        requested_days: { type: integer, minimum: 1, maximum: 7 }
+        status: { $ref: '#/components/schemas/RequestStatus' }
+        decided_by: { type: [integer, 'null'] }
+        decided_at: { type: [string, 'null'], format: date-time }
+        decision_note: { type: [string, 'null'] }
+        released_by: { type: [integer, 'null'] }
+        released_at: { type: [string, 'null'], format: date-time }
+        due_at: { type: [string, 'null'], format: date-time }
+        returned_at: { type: [string, 'null'], format: date-time }
+        inspection_result:
+          oneOf:
+            - { $ref: '#/components/schemas/InspectionResult' }
+            - { type: 'null' }
+        inspection_notes: { type: [string, 'null'] }
+        closed_at: { type: [string, 'null'], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    BorrowRequestWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/BorrowRequest'
+        - type: object
+          properties:
+            equipment: { $ref: '#/components/schemas/EquipmentRef' }
+            borrower:
+              $ref: '#/components/schemas/PersonRef'
+    AuditEntry:
+      type: object
+      required: [action, from_status, to_status, created_at]
+      properties:
+        action: { type: string, description: 'submit, approve, reject, release, return or close.' }
+        from_status: { type: [string, 'null'] }
+        to_status: { type: string }
+        created_at: { type: string, format: date-time }
+    BorrowRequestDetail:
+      allOf:
+        - $ref: '#/components/schemas/BorrowRequestWithRelations'
+        - type: object
+          required: [audit_logs]
+          properties:
+            audit_logs:
+              type: array
+              items: { $ref: '#/components/schemas/AuditEntry' }
+    CustodyItem:
+      type: object
+      required: [request_id, equipment, borrower, due_at, overdue]
+      properties:
+        request_id: { type: integer, minimum: 1 }
+        equipment: { $ref: '#/components/schemas/EquipmentRef' }
+        borrower: { $ref: '#/components/schemas/PersonRef' }
+        due_at: { type: string, format: date-time }
+        overdue: { type: boolean }
+    NotificationStatus:
+      type: string
+      enum: [PENDING, SENT, SENT_AFTER_RETRY, FAILED_NEEDS_HUMAN, HANDLED_MANUALLY]
+    ReminderNotification:
+      type: object
+      required: [id, borrow_request_id, recipient_id, type, status, attempts, created_at, updated_at]
+      properties:
+        id: { type: integer, minimum: 1 }
+        borrow_request_id: { type: integer }
+        recipient_id: { type: integer }
+        type: { type: string, enum: [reminder, overdue] }
+        status: { $ref: '#/components/schemas/NotificationStatus' }
+        attempts: { type: integer, minimum: 0, maximum: 255 }
+        last_error: { type: [string, 'null'] }
+        correlation_id: { type: [string, 'null'] }
+        sent_at: { type: [string, 'null'], format: date-time }
+        handled_by: { type: [integer, 'null'] }
+        handled_at: { type: [string, 'null'], format: date-time }
+        handled_note: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ManualHandlingItem:
+      allOf:
+        - $ref: '#/components/schemas/ReminderNotification'
+        - type: object
+          required: [borrow_request, recipient]
+          properties:
+            borrow_request:
+              allOf:
+                - $ref: '#/components/schemas/BorrowRequest'
+                - type: object
+                  properties:
+                    equipment: { $ref: '#/components/schemas/EquipmentRef' }
+            recipient:
+              type: object
+              required: [id, name, role]
+              properties:
+                id: { type: integer }
+                name: { type: string }
+                role: { $ref: '#/components/schemas/Role' }
+    NotifierMessage:
+      type: object
+      description: The exact bytes of this body are covered by the signature. Do not re-encode it.
+      required: [notification_id, type, recipient_id]
+      properties:
+        notification_id: { type: integer }
+        type: { type: string, enum: [reminder, overdue] }
+        request_id: { type: integer }
+        recipient_id: { type: integer }
+        attempt: { type: integer }
+    MessageRejected:
+      type: object
+      required: [message, reason]
+      properties:
+        message: { type: string, const: Message rejected. }
+        reason: { type: string, enum: [malformed, bad_signature, expired, replayed] }

@@ -1,0 +1,5 @@
+# This file instructs Redocly's linter to ignore the rules contained for specific parts of your API.
+# Why: GET /health/ready takes no input, needs no login and has no throttle, so it has no client error (4XX) to document.
+openapi.yaml:
+  operation-4xx-response:
+    - '#/paths/~1health~1ready/get/responses'

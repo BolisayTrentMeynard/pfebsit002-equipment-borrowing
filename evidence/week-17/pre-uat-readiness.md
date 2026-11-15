@@ -73,6 +73,22 @@ Mismatch (settled 2026-11-15, see `test-data-plan.md`, "Settled mismatch"): item
 
 Correction to a chat remark: the chat said notification ids "restart" after a reset. They do not: ids went 1 to 4, then 5 to 8, so the seeder deletes rows and the counter keeps going.
 
+## Chunk 3 close-out (2026-11-16)
+
+Developer statement, 2026-11-16: the Postman run time, the UAT-06 and UAT-09 exact messages and the keyboard notes are already captured in `Downloads\FLUTTER\Week 17` (Postman Runner screenshot, the 6:04 recording, screenshots). Claude has not seen those files, and the values are **not yet written in this repo**, so these items stay "reported". They are transcribed when the files are renamed and filed in the chunk 6 evidence round.
+
+| Item | Where the evidence is | Status |
+|------|-----------------------|--------|
+| A6 / D4 Postman run time | Runner screenshot, `Downloads\FLUTTER\Week 17` | captured by developer; value to be written in chunk 6 |
+| C5 UAT-09 message | recording and screenshots, same folder | captured by developer; text to be written in chunk 6 |
+| C6 keyboard notes (including the "Enable accessibility" button and focus spots) | recording and notes, same folder | captured by developer; to be written in chunk 6 |
+| C9 UAT-06 messages (form or server origin) | recording and screenshots, same folder | captured by developer; to be written in chunk 6 |
+| C10 / D8 integrity check | not run in chunk 3 | **carried into chunk 4**: run it BEFORE any reset (decision 4, `fc6b37c`) |
+| D1 / D10 UAT-08 recipient and count | settled 2026-11-15 | closed: card and `uat-plan.md` section 5 expect 3 listed, 2 remaining; operator note on the extra overdue notice in `uat-plan.md` section 11 (`fc6b37c`) |
+| D11 baseline | settled 2026-11-15 | closed: 120 backend tests (750 assertions), 15 Flutter tests, Postman 149/149 |
+
+Status: chunk 3 closed. The only carry-over into chunk 4 is the integrity check; the only open writing task is transcribing the four captured values in chunk 6.
+
 ## Evidence to drop unsorted into `Downloads\FLUTTER\Week 17`
 Terminal screenshots of: the addendum commit, `php -m` OPcache line, reset result, `php artisan test` summary, `flutter test` summary, Postman Runner summary, `scan-secrets.ps1` result, `backup-restore.ps1` result, `reminders:run` output (twice), the worker windows (success and failure), the SQL rows after each, `ops:status`; the screen recording (6:04); the 1280 px and 360 px screenshots; the keyboard and zoom notes. Claude renames and files them in chunk 6.
 

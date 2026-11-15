@@ -1,3 +1,5 @@
+> **Superseded by `backend/openapi.yaml`** (Week 17). This Week 13 contract is kept as history; the YAML is the current contract.
+
 # API Contract (Week 13)
 
 Written from the code in `backend/routes/api.php`, the controllers and the middleware. Base URL in the demo: `http://127.0.0.1:8000/api`. All bodies are JSON. All data is fake test data.

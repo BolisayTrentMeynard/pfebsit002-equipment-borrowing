@@ -1,6 +1,6 @@
 # Week 17 Evidence Index: Final Integration UAT and Evaluation
 
-Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunks 3 to 6 are not started.
+Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); commit pending. Chunks 4 to 6 are not started.
 
 Drive folder link: to be added.
 
@@ -19,7 +19,7 @@ Scope of every result: one Windows PC, local staging, fake data, three testers. 
 | [`decision-record-007-uat-approach.md`](decision-record-007-uat-approach.md) | Why a moderated session with three testers; rejected options |
 | [`decision-record-008-architecture-alternatives.md`](decision-record-008-architecture-alternatives.md) | Options A, B, C, criteria and weights (scores come in chunk 2) |
 | [`test-data-plan.md`](test-data-plan.md) | Fake data, seeder guard, resets, backups, capture hygiene |
-| [`week17-predictions.txt`](week17-predictions.txt) | Predictions for chunks 3 and 4, committed alone before the runs |
+| [`week17-predictions.txt`](week17-predictions.txt) | Predictions for chunks 3 and 4, committed alone before the runs (Addendum 1 for chunk 3 is committed alone first) |
 
 ## Tester-independent documents (chunk 2, committed)
 | File | What it is |
@@ -32,13 +32,19 @@ Scope of every result: one Windows PC, local staging, fake data, three testers. 
 | [`change-control-notes.md`](change-control-notes.md) | Draft: kinds of change, rules for a fix and for a change request, commit habit, deciders, change log (2c) |
 | [`handover-readme-draft.md`](handover-readme-draft.md) | Draft README for a new maintainer; replaces the root README only in chunk 6d (2c) |
 
+## Pre-UAT readiness (chunk 3)
+| File | What it is |
+|------|------------|
+| [`pre-uat-readiness.md`](pre-uat-readiness.md) | Filled-in record for 3a, 3b and 3c: expected values from Addendum 1, actual results (output or developer report), deviations D1 to D10, gate statement for the developer |
+| [`test-data-plan.md`](test-data-plan.md) | Updated: the two account sets, the UAT item table, the proposed card-to-item mapping, the open mismatch about UAT-08 |
+
 ## Chunk status
 | Chunk | Status |
 |-------|--------|
 | 0 Design documents | Committed (`6c3849b`) |
 | 1 OpenAPI, drift test, UAT seed | Committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`); `php artisan test` 120 passed on the developer's MySQL |
 | 2 Tester-independent documents (DR-008 scores, final diagram, evaluation matrix skeleton, maintenance plan, change control, handover README draft) | Committed and pushed (`bfdfa34` 2a, `32840ab` 2b, `07e1f6f` 2c); docs only, no test run |
-| 3 Pre-UAT readiness | Not started |
+| 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); the other files await the developer's commit |
 | 4 UAT session | Not started |
 | 5 Findings, fixes, retest, regression | Not started |
 | 6 Final assembly, evidence round, tag | Not started |

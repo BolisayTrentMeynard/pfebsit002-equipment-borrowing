@@ -29,7 +29,7 @@ Fake data only. Each role has work waiting so no tester depends on another's spe
 | For | Waiting |
 |-----|---------|
 | T1 borrower | Several available items; no open request for the item used in UAT-01 |
-| T2 approver | Two pending requests from another fake borrower (one to approve, one to reject); one released item whose due date has passed (the overdue item); one failed reminder is NOT pre-made, the operator makes it (UAT-08) |
+| T2 approver | Two pending requests from another fake borrower (one to approve, one to reject); one released item whose due date has passed (the overdue item); one failed reminder IS pre-made by `UatSeeder` (decision 2026-11-15, see `lab-log.md`); the operator adds two more before UAT-08 (wrong-URL worker), so Manual handling lists 3 and 2 remain after one is handled |
 | T3 staff | One approved request ready to release; one released item ready to return |
 Exact names and tags are written in `test-data-plan.md` after chunk 1.
 
@@ -63,6 +63,13 @@ No Critical or High finding is open; every finding has a disposition; every fix 
 
 ## 11. Session outline (about 90 minutes planned; the predictions guess longer)
 Welcome and consent (5 min) → UAT-01 → UAT-02 → UAT-03 (relay, in one room) → UAT-04 → operator action and UAT-08 → UAT-05 → UAT-06, UAT-07 → UAT-09 (operator stops the API) → UAT-10 → five-question rating and acknowledgements (10 min). Fallback if testers cannot meet together: each role on its own, using the seeded data.
+
+**Operator notes for the session (added 2026-11-15 after the chunk 3 run):**
+- Run the integrity check (`loadtest/integrity-check.sql`) BEFORE any reset; a reset first makes the check meaningless (chunk 3 deviation D8).
+- UAT-02 needs the request made in UAT-01 (the seeder makes one pending request), so keep the card order.
+- `reminders:run` skips the same kind of notification for 20 hours. Re-run `UatSeeder` before each proof or each tester run.
+- Seeded data also holds one overdue notice for `approver@example.test` after `reminders:run`; it appears in Manual handling when the wrong-URL worker fails it. Do not read it as a tester error.
+- Regression baseline is 120 backend tests (750 assertions), 15 Flutter tests, Postman 149/149 (decision D11 as updated on 2026-11-15).
 
 ## 12. Privacy
 The repo and its screenshots hold only T1, T2, T3, the role and initials. No names, e-mails, faces or voices. Consent and the signed sheet stay on paper or a private folder. The login card and the dev seed password stay out of the repo and out of every frame.

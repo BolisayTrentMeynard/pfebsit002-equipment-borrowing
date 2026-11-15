@@ -41,7 +41,7 @@ Scope of every result: one Windows PC, local staging (`https://localhost:9443`),
 
 First try of B4 and B6 worked; no failed first try in 3b.
 
-Mismatch to settle before chunk 4 (see `test-data-plan.md`, "Open mismatch"): items in Manual handling after B6 = **3** (ops:status; the developer reports the browser list also showed 3, and 2 remained after one was marked handled). The UAT-08 card says "listed once" and "empty afterwards". Developer's decision (card wording, expectation, or seeder change as its own segment): open, to be decided before chunk 4.
+Mismatch (settled 2026-11-15, see `test-data-plan.md`, "Settled mismatch"): items in Manual handling after B6 = **3** (ops:status; the developer reports the browser list also showed 3, and 2 remained after one was marked handled). The UAT-08 card says "listed once" and "empty afterwards". Developer's decision (card wording, expectation, or seeder change as its own segment): settled on 2026-11-15: the card and `uat-plan.md` section 5 were changed to expect 3 listed and 2 remaining; the seeder is unchanged (see `lab-log.md`).
 
 ## 3c The relay run alone (screen recording)
 | Step | Check | Expected | Actual | Result |

@@ -36,7 +36,10 @@ Scope of every result: one Windows PC, local staging, fake data, three testers. 
 | File | What it is |
 |------|------------|
 | [`pre-uat-readiness.md`](pre-uat-readiness.md) | Filled-in record for 3a, 3b and 3c: expected values from Addendum 1, actual results (output or developer report), deviations D1 to D10, gate statement for the developer |
-| [`test-data-plan.md`](test-data-plan.md) | Updated: the two account sets, the UAT item table, the proposed card-to-item mapping, the open mismatch about UAT-08 |
+| [`test-data-plan.md`](test-data-plan.md) | Updated: the two account sets, the UAT item table, the card-to-item mapping, the UAT-08 mismatch (settled 2026-11-15: card and plan changed, not the seeder) |
+
+## Decisions after chunk 3 (2026-11-15)
+UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 changed; seeder unchanged); regression baseline is 120 / 15 / 149; operator notes added to `uat-plan.md` section 11; the integrity check runs before any reset in chunk 4. See `lab-log.md`.
 
 ## Chunk status
 | Chunk | Status |

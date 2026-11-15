@@ -7,7 +7,7 @@ Every requirement is linked to the check that tests it. Result columns say "Plan
 |-------------|-----------------|--------------|--------|
 | AC-01 to AC-24 (Weeks 13 and 14) | `php artisan test` | U after every code change | Planned |
 | AC-25 to AC-38 (Week 15) | Postman 149, `php artisan test`, `flutter test` (15) | P on staging before and after fixes | Planned |
-| AC-39 to AC-53 (Week 16) | `php artisan test` (86), staging scripts, scans | U and scans after fixes; k6 only if a fix touches the request path | Planned |
+| AC-39 to AC-53 (Week 16) | `php artisan test` (120 passed, 750 assertions; was 86 before chunk 1), staging scripts, scans | U and scans after fixes; k6 only if a fix touches the request path | Planned |
 
 ## Part B: Week 17 criteria
 | Requirement (source) | AC | Check | Layer | Planned evidence | Known limit |

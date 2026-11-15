@@ -34,14 +34,14 @@ Seeder run three times gave the counts `[4,6,11]` (accounts, UAT items, requests
 | UAT-05 | T3 | return UAT-005 Extension Cord Epsilon with result good (`uatborrower1` then sees it closed) |
 | UAT-06 | T1 | short reason; 0 or 8 days; UAT-001 again while the approved request on it is still open (needs UAT-02 to have approved it, not rejected it) |
 | UAT-07 | any | wrong password, right password, sign out |
-| UAT-08 | T2 | Manual handling; see "Open mismatch" below |
+| UAT-08 | T2 | Manual handling lists 3 (1 seeded, 2 from the operator run); one marked handled, 2 remain (see "Settled mismatch" below) |
 | UAT-09 | T1 | the borrower's request list while the operator stops the API |
 | UAT-10 | T1 | request UAT-002 Laptop Cart Beta at about 360 px |
 
 Dependencies this creates: UAT-02 needs the request made in UAT-01 (the seeder makes only one pending request, not two as the plan said, so the relay order matters); UAT-06's third case needs the UAT-001 request to be approved and not yet released. Whether this holds is confirmed or corrected in `pre-uat-readiness.md` (3c).
 
-## Open mismatch (found in chunk 3 by reading, not yet by running; decision needed before chunk 4)
-`uat-plan.md` section 5 says the failed reminder is NOT pre-made and the operator makes it; the UAT-08 card expects it "listed once" and "empty afterwards". `UatSeeder` does pre-make one FAILED_NEEDS_HUMAN notification for `uatapprover`, and the Manual handling list shows every failed notification whatever the recipient, so the operator action adds more items. Run result (2026-11-15): Manual handling backlog 3 after the wrong-URL worker, 2 remaining after one is handled (developer report for the browser list). It is recorded in `pre-uat-readiness.md` (3b and 3c). The developer decides before chunk 4 whether to change the card wording, the expectation, or the seeder (a code change would be its own segment with tests first). Nothing is changed in chunk 3.
+## Settled mismatch (found in chunk 3, decided by the developer on 2026-11-15)
+`uat-plan.md` section 5 said the failed reminder is not pre-made and the UAT-08 card expected it "listed once" and "empty afterwards". `UatSeeder` pre-makes one FAILED_NEEDS_HUMAN notification for `uatapprover`, and Manual handling lists every failed notification whatever the recipient. Run result (2026-11-15): 3 items listed after the wrong-URL worker, 2 remaining after one is handled (developer report for the browser list; `ops:status` backlog 3). **Decision: change the card wording and the plan, not the seeder** (no code change, no migration, rollback to `week-16` stays safe). The card and `uat-plan.md` section 5 now say 3 listed and 2 remaining. Details: `pre-uat-readiness.md` (D1, D10) and `lab-log.md`.
 
 ## Resets and backups
 Reset: `deploy\staging-release.ps1 -SkipBuild` (about 13 s) before the session and whenever a session needs a clean start; it re-seeds only `DatabaseSeeder`, so run `UatSeeder` again afterwards (running `UatSeeder` alone also resets the UAT data between tester runs). Backup: `deploy\backup-restore.ps1` before UAT data is entered; the dump stays outside the repo (`C:\dev\pfebsit002-backups\`) because it holds fake password hashes.

@@ -1,0 +1,32 @@
+Week 17 - Predictions (to be committed ALONE and BEFORE chunk 3 or the UAT session)
+
+Student: Bolisay Trent Meynard, BSIT 3A
+Project: #5 Equipment Borrowing Reminder System
+Date drafted: 2026-11-15 (by Claude, from reading the code and evidence in the 2026-11-15 clean zip; NOTHING has been run).
+Commit this file by itself as the first commit on branch week-17-uat. The commit time is the developer's record. Write the hash and time into lab-log.md afterwards, in a later commit.
+Rule: wrong predictions stay in the record. Actual results go underneath later, never over the prediction. Any new prediction for chunk 3 or 4 is added as an addendum, committed alone, before that run.
+
+These are guesses, not measurements. They come from reading the code, the Week 16 evidence and general knowledge of how first-time users behave. Where a range is given, the real value may fall outside it; that is a finding.
+
+Chunk 3 - Pre-UAT readiness on staging
+
+ R1  The reminder path on staging (never run before).
+     - With the Caddy root certificate set in NOTIFIER_CA_BUNDLE, `reminders:run` then `queue:work` gives the status SENT for a due item.
+     - With a wrong NOTIFIER_URL set in the worker's own PowerShell window, the item goes to FAILED_NEEDS_HUMAN after 3 attempts (waits of about 5 s and 15 s), and it appears in the approver's Manual handling list.
+     - Chance that the FIRST try fails for a setup reason (certificate path, quoting, a window without the variable): about 40%. It is a setup problem, not a code problem, and it is recorded either way.
+ R2  Regression baseline: `php artisan test` 86 passed, `flutter test` 15 passed, Postman 149/149 on staging, scan-secrets finds the same known items as in Week 16 (the word "password" only as a variable name). No surprises expected.
+ R3  Keyboard-only walk: login and New request can be completed with Tab, Enter and Space. Predicted problem: at least one place where the focus order or the focus ring is not obvious (Flutter Web draws on a canvas). 200% zoom: readable, no horizontal scrolling on the login screen; the detail screen may need scrolling.
+
+Chunk 4 - The UAT session (3 testers, 10 scenarios, about 11 attempts)
+
+ U1  Completion without help: 8 to 10 of 11 attempts (73% to 91%). The 80% threshold (AC-55) is met, but not by a wide margin.
+ U2  Where testers hesitate most: UAT-06 (invalid requests; they will not know which rule they broke until the message appears) and UAT-04 (finding the overdue item; the Overdue tab is named clearly, so hesitation of 10 to 40 s, not failure).
+ U3  Time on task (first-time testers): new request 1.5 to 3 min; approve and reject 1 to 2 min; release 1 to 2 min; return and inspection 1 to 2 min. Most likely miss of AC-56: the new request, because of the reason field and the item picker.
+ U4  UAT-09 (API stopped): the tester sees a generic error screen ("Something went wrong" or "Cannot reach the server"; with Caddy still up and the API down I expect the generic one) and understands that "Try again" is the next step in all 3 cases. Predicted finding: the message does not say whether the problem is theirs or the server's (Low or Medium).
+ U5  UAT-08 (Manual handling): approver T2 finds the list and the "Mark handled" button quickly; the hesitation is the required note (what to write). Predicted: understood after the example text in the dialog.
+ U6  Findings: 4 to 10 in total. Kinds: mostly usability and wording (Low and Medium), 0 to 1 High, 0 Critical. At least one finding will be about dates and times (due date shown in local time, reminder text in UTC in the log), and at least one will be a request outside the registered scope (a change request, for example "send me a real e-mail"). Predicted fixes needed: 1 to 3 (cap is 5).
+ U7  Acknowledgements: each tester gives "accept" or "accept with conditions"; nobody gives "reject". The sponsor line is likely "pending" because an instructor or custodian may not be available.
+ U8  Operator burden: the relay will take longer than 90 minutes (100 to 140) because of resets and the two operator actions (reminder failure, API stop).
+ U9  Data after the session: integrity checks (no double open request per item and borrower, no item released twice, audit rows add up) are clean. Errors in the API log: only the expected 401 (wrong password), 422 (invalid requests) and the 5xx or 502 during UAT-09.
+
+Not predicted on purpose: performance numbers (3 users, nothing to measure), anything about real offices.

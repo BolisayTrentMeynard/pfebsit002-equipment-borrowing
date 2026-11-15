@@ -1,0 +1,49 @@
+flowchart TB
+    subgraph Users["People (Chrome on the developer PC for UAT)"]
+        Bor(["Borrower"])
+        App(["Approver"])
+        Stf(["Staff"])
+        Dev(["Developer as operator<br/>(runs scheduler and worker by hand)"])
+    end
+
+    subgraph Staging["Local staging, same PC (Option A of DR-008)"]
+        Caddy["Caddy HTTPS :9443<br/>local CA certificate<br/>serves Flutter release build<br/>proxies /api and /up"]
+        Web["Flutter Web app<br/>token in memory only<br/>screens: login, home, new request, detail"]
+        subgraph Laravel["Laravel API, php artisan serve :8001, single-threaded"]
+            Mid["Middleware: correlation id, security headers,<br/>request log line, token auth, role check, throttle"]
+            Ctl["Controllers and BorrowWorkflow<br/>16 documented operations<br/>transactions and row locks"]
+            Recv["POST /api/notifier/receive<br/>signature, time window, replay check"]
+        end
+        Sched["reminders:run<br/>(started by hand, R32)"]
+        Queue[("jobs table<br/>database queue")]
+        Worker["queue:work<br/>(started by hand)<br/>3 attempts, waits 5 s and 15 s"]
+        Notif["SignedHttpNotifier<br/>HMAC-SHA256, 5 s timeout"]
+        DB[("MySQL equipment_staging<br/>users, api_tokens, equipment,<br/>borrow_requests, audit_logs,<br/>reminder_notifications")]
+        Log[/"laravel.log<br/>http.request lines, no secrets"/]
+    end
+
+    Ops["Operator tools and documents (not part of the running system)<br/>deploy scripts: release, backup, rollback, secret scan<br/>signals: /up, /api/health/ready, ops:status, log<br/>backend/openapi.yaml kept in step by OpenApiDriftTest<br/>UatSeeder: fake data, local, staging, testing only"]
+
+    Human(["Manual handling<br/>approver resolves with a note"])
+
+    Bor --> Caddy
+    App --> Caddy
+    Stf --> Caddy
+    Caddy -- "static files" --> Web
+    Web -- "HTTPS /api" --> Caddy
+    Caddy -- "plain HTTP, loopback only (R6)" --> Mid
+    Mid --> Ctl
+    Ctl <--> DB
+    Dev --> Sched
+    Dev --> Worker
+    Sched -- "due soon or overdue" --> Queue
+    Queue --> Worker
+    Worker --> Notif
+    Notif -- "signed message over HTTPS" --> Caddy
+    Caddy --> Recv
+    Recv --> DB
+    Worker -- "SENT, SENT_AFTER_RETRY,<br/>or FAILED_NEEDS_HUMAN" --> DB
+    DB -- "FAILED_NEEDS_HUMAN list" --> Human
+    Human --> Ctl
+    Mid --> Log
+    Ops -.-> Staging

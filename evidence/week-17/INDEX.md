@@ -41,6 +41,11 @@ Scope of every result: one Windows PC, local staging, fake data, three testers. 
 ## Decisions after chunk 3 (2026-11-15)
 UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 changed; seeder unchanged); regression baseline is 120 / 15 / 149; operator notes added to `uat-plan.md` section 11; the integrity check runs before any reset in chunk 4. See `lab-log.md`.
 
+## UAT session (chunk 4)
+| File | What it is |
+|------|------------|
+| [`uat-session-record.md`](uat-session-record.md) | Session record, prefilled before the session: run header, entry checks, 12 planned attempts with their items, ratings, acknowledgements (sponsor pending), raw findings, the integrity check before any reset, gate. Empty cells are filled during the session; T1 to T3 only |
+
 ## Chunk status
 | Chunk | Status |
 |-------|--------|
@@ -48,6 +53,6 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | 1 OpenAPI, drift test, UAT seed | Committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`); `php artisan test` 120 passed on the developer's MySQL |
 | 2 Tester-independent documents (DR-008 scores, final diagram, evaluation matrix skeleton, maintenance plan, change control, handover README draft) | Committed and pushed (`bfdfa34` 2a, `32840ab` 2b, `07e1f6f` 2c); docs only, no test run |
 | 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); other files committed in `8228cf9` |
-| 4 UAT session | Not started |
+| 4 UAT session | Prepared 2026-11-16 (`uat-session-record.md`); session planned 2026-11-16 08:30; testers T1 to T3; no sponsor yet; not run |
 | 5 Findings, fixes, retest, regression | Not started |
 | 6 Final assembly, evidence round, tag | Not started |

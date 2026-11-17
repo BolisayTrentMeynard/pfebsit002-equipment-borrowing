@@ -8,7 +8,7 @@ One repository for the whole project. Each week's work is a git tag (for example
 | 14 | `week-14` | Secure Data Exchange and Encryption | [`week-14/INDEX.md`](week-14/INDEX.md) |
 | 15 | `week-15` | Integration Testing and Security Hardening | [`week-15/INDEX.md`](week-15/INDEX.md) |
 | 16 | `week-16` | Performance, Reliability and Deployment | [`week-16/INDEX.md`](week-16/INDEX.md) |
-| 17 | `week-17` | Final Integration UAT and Evaluation | [`week-17/INDEX.md`](week-17/INDEX.md) (in progress) |
+| 17 | `week-17` | Final Integration UAT and Evaluation | [`week-17/INDEX.md`](week-17/INDEX.md); start with [`week-17/handover-statement.md`](week-17/handover-statement.md) and [`week-17/test-matrix.md`](week-17/test-matrix.md) |
 | 18 | `week-18` | Final Review, Demo and Technical Defense | not started |
 
 Large files (screenshots, recordings) are on Google Drive, one folder per week (`PFEBSIT002 Finals / Week 13` and so on). The Drive link is added to each week's index once the submission method is known.

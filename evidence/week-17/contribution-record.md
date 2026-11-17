@@ -20,7 +20,12 @@ The project was built in small chunks. For each chunk the developer asked Claude
 The architecture and why Option A (DR-008); how a request moves from PENDING to CLOSED; how the signed notifier message and the retry and manual-handling path work; what each test layer checks (PHPUnit, Postman, k6, UAT); what the session did and did not show; the known limits and the conditions before any real use.
 
 ## Third-party code and acknowledgement
-Flutter and Laravel scaffolds, the Laravel framework and its Composer packages, the Flutter `http` package, Caddy, k6, the Redocly CLI (lint only). AI assistance: Claude (Anthropic), as above. This must also be stated in the root README before submission ([`handover-readme-draft.md`](handover-readme-draft.md), section 14).
+Flutter and Laravel scaffolds, the Laravel framework and its Composer packages, the Flutter `http` package, Caddy, k6, the Redocly CLI (lint only). AI assistance: Claude (Anthropic), as above. The root README now states this (section 14, replaced on 2026-11-17 in chunk 6d).
+
+## Developer's review (2026-11-17)
+The developer read the table above and said every row is true; nothing was changed. The line below is for him to write.
+
+**What I found hardest (developer's own words):** _to be written by the developer before submission; Claude cannot know it._
 
 ## Left for the developer
-Check each row above, change any that is not true in his own words, and add a line about what he found hardest. Claude cannot know that. The optional reflection on the four module prompts is not written (it is first in the cut order of the plan).
+Write the line above. The optional reflection on the four module prompts is not written (it is first in the cut order of the plan).

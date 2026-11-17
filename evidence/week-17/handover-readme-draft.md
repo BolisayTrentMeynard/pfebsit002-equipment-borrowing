@@ -1,5 +1,7 @@
 # Handover README (DRAFT, Week 17 chunk 2c)
 
+> **Superseded on 2026-11-17 (chunk 6d):** the root `README.md` now holds this text with root-relative links, the 2026-11-17 test results and the AI-assistance statement. This draft is kept as history and is no longer updated.
+
 > **Status: draft for a new maintainer.** Written 2026-11-15 by Claude from the repository files and the Week 13 to 17 evidence. It does **not** replace the root `README.md` yet; that happens in chunk 6d, after the findings and fixes, when the links below are changed to root-relative ones. **Not tested from a fresh clone.** The setup steps are the developer's own steps from the root README, reorganised. Where a number comes from the developer's run, it says so. This draft never calls the system production ready.
 
 # Equipment Borrowing Reminder System

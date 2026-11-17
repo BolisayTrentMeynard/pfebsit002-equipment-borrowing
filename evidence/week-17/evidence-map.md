@@ -16,7 +16,7 @@ Written 2026-11-17 by Claude. **Docs only. Built, untested.** "Result" says what
 | AC-62 | OpenAPI | [`../../backend/openapi.yaml`](../../backend/openapi.yaml), `OpenApiDriftTest` | Met per the developer's runs; the drift test is inside the 120 that passed on 2026-11-17; Redocly not rerun |
 | AC-63 | Evaluation matrix | [`evaluation-matrix.md`](evaluation-matrix.md) | Met: 8 attributes, links checked by Claude (0 broken) |
 | AC-64 | Architecture alternatives | [`decision-record-008-architecture-alternatives.md`](decision-record-008-architecture-alternatives.md) | Met: weights before scores, sensitivity test, conditional recommendation |
-| AC-65 | Handover package | [`handover-readme-draft.md`](handover-readme-draft.md), [`maintenance-plan.md`](maintenance-plan.md), [`change-control-notes.md`](change-control-notes.md) | Partly met: drafts exist; README replacement and a fresh reviewer are 6d |
+| AC-65 | Handover package | [`../../README.md`](../../README.md) (replaced 2026-11-17 from [`handover-readme-draft.md`](handover-readme-draft.md)), [`maintenance-plan.md`](maintenance-plan.md), [`change-control-notes.md`](change-control-notes.md) | Partly met: documents exist; no clean-clone run and no fresh reviewer yet |
 | AC-66 | Handover statement | [`handover-statement.md`](handover-statement.md) | Written; conditional; sponsor pending |
 | AC-67 | Secrets and personal data | [`test-matrix.md`](test-matrix.md) (G5 to G7) | Met within the scan limits; whole-file scan exit 1 for known old entries; screenshots and the recording not checked by Claude |
 | AC-68 | Usability basics (developer only) | [`pre-uat-readiness.md`](pre-uat-readiness.md) | Done per the developer's reports; screenshots not seen by Claude |

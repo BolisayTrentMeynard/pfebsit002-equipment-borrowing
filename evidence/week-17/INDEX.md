@@ -62,6 +62,14 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | [`evidence-map.md`](evidence-map.md) | AC-54 to AC-68 to files and results |
 | [`maintenance-plan.md`](maintenance-plan.md) | Backlog now B1 to B16 (B15 and B16 from the findings) |
 
+## Evidence round (chunk 6c)
+| File | What it is |
+|------|------------|
+| [`test-matrix.md`](test-matrix.md) | AC-54 to AC-68 with expected result, actual, method, evidence and limit; the 2026-11-17 regression round (G1 to G7: backend 120 and Flutter 15 on the developer's word, Postman 149 of 149 in 1 m 34 s, three secret scans); checks run by Claude; predictions compared; runs that do not count; what was not run |
+| [`interpretation-and-maintainability-note.md`](interpretation-and-maintainability-note.md) | What the results show and do not show; maintenance notes (including: run the scan with `-StartBytes`) |
+| [`traceability-matrix.md`](traceability-matrix.md) | Results filled in (Part A and the new Part D) |
+| [`evidence-map.md`](evidence-map.md), [`findings-register.md`](findings-register.md), [`residual-risk-register.md`](residual-risk-register.md), [`evaluation-matrix.md`](evaluation-matrix.md) | Updated with the rerun (no finding or assessment changed; R12 and R26 notes) |
+
 ## Chunk status
 | Chunk | Status |
 |-------|--------|
@@ -71,4 +79,4 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); other files committed in `8228cf9` |
 | 4 UAT session | Committed and pushed (`d0a2765`, `6163514`). Recording reviewed by the developer later the same day (AC-55 12 of 12, AC-56 within limits, AC-57 partly; his reading, not seen by Claude). Session run 2026-11-17 (about 12:46 to 13:16); `uat-session-record.md` filled from the developer's report (per-card notes not kept, recording is the source); integrity checks clean; FIND-01 explained (not a defect); all three testers accept; no sponsor yet |
 | 5 Findings, fixes, retest, regression | Committed and pushed (`7180daa`, `cbd98d1`). Triage 2026-11-17: 6 findings, none Critical or High, one Medium proposed (records gap), no code fix proposed; dispositions approved 2026-11-17; regression not rerun (no code change), planned for chunk 6 |
-| 6 Final assembly, evidence round, tag | 6a and 6b written 2026-11-17 (docs only, built, untested). 6c (test matrix, traceability results, interpretation note, checks) and 6d (fresh reviewer, root README, merge, tag) wait for the regression rerun |
+| 6 Final assembly, evidence round, tag | 6a and 6b committed and pushed (`8eb40a6`, docs only). Regression rerun 2026-11-17 (backend 120 and Flutter 15 on the developer's word; Postman 149 of 149; scans explained). 6c written 2026-11-17 (docs only, built, untested; not committed yet). 6d (fresh reviewer, root README, merge, tag) waits for the developer; the contribution record still needs his review and his own line |

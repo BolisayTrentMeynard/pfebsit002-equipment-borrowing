@@ -1,13 +1,13 @@
 # Traceability Matrix (Week 17, v1 written 2026-11-15 before any run)
 
-Every requirement is linked to the check that tests it. Result columns say "Planned" until the evidence round. Layers: **S** = UAT scenario, **U** = PHPUnit, **P** = Postman (Week 15 collection, 149 tests), **F** = Flutter widget test, **L** = lint or script run by Claude, **M** = manual check by the developer, **D** = document review.
+Every requirement is linked to the check that tests it. Result columns said "Planned" until the evidence round; Part A and the new Part D were filled on 2026-11-17 in chunk 6c (details in [`test-matrix.md`](test-matrix.md)). Layers: **S** = UAT scenario, **U** = PHPUnit, **P** = Postman (Week 15 collection, 149 tests), **F** = Flutter widget test, **L** = lint or script run by Claude, **M** = manual check by the developer, **D** = document review.
 
 ## Part A: Earlier criteria kept in the regression set
 | Requirement | Existing checks | Week 17 role | Result |
 |-------------|-----------------|--------------|--------|
-| AC-01 to AC-24 (Weeks 13 and 14) | `php artisan test` | U after every code change | Planned |
-| AC-25 to AC-38 (Week 15) | Postman 149, `php artisan test`, `flutter test` (15) | P on staging before and after fixes | Planned |
-| AC-39 to AC-53 (Week 16) | `php artisan test` (120 passed, 750 assertions; was 86 before chunk 1), staging scripts, scans | U and scans after fixes; k6 only if a fix touches the request path | Planned |
+| AC-01 to AC-24 (Weeks 13 and 14) | `php artisan test` | U after every code change | Passed: 120 backend tests on 2026-11-17 (developer's word; summary line not sent) |
+| AC-25 to AC-38 (Week 15) | Postman 149, `php artisan test`, `flutter test` (15) | P on staging before and after fixes | Passed: Postman 149 of 149, 1 m 34 s (Runner screenshot seen); `flutter test` 15 and `php artisan test` 120 (developer's word) |
+| AC-39 to AC-53 (Week 16) | `php artisan test` (120 passed, 750 assertions; was 86 before chunk 1), staging scripts, scans | U and scans after fixes; k6 only if a fix touches the request path | Passed: 120 backend tests; scans: new log region clean (exit 0), whole file exit 1 for known old entries (G5 to G7); k6 not rerun |
 
 ## Part B: Week 17 criteria
 | Requirement (source) | AC | Check | Layer | Planned evidence | Known limit |
@@ -34,3 +34,18 @@ Every requirement is linked to the check that tests it. Result columns say "Plan
 | R15 CORS regex | Backlog unless a finding asks for it |
 | R14 Manual-handling recipient fields | Looked at when OpenAPI documents the answer; any change is a finding with a disposition |
 | R18 Week 15 tests A, B, C not run | UAT-07 and UAT-09 cover wrong password and API stopped in the app |
+
+## Part D: Week 17 results (chunk 6c, 2026-11-17)
+| AC | Result | Where |
+|----|--------|-------|
+| AC-54 | Met | [`test-matrix.md`](test-matrix.md) |
+| AC-55 | Met on the developer's reading of the recording (12 of 12) | same |
+| AC-56 | Not measured (no stopwatch); reported within limits | same |
+| AC-57 | Partly met (UAT-06 case 2 not exercised) | same |
+| AC-58, AC-59 | Met; the decider is the developer | same |
+| AC-60 | Met: no fix to retest; regression passed; scan explained | same |
+| AC-61 | Met as worded; sponsor pending | same |
+| AC-62, AC-63, AC-64, AC-66 | Met | same |
+| AC-65 | Partly met (no fresh reviewer, no clean-clone run) | same |
+| AC-67 | Met within the scan limits | same |
+| AC-68 | Done per the developer's report; not verified by Claude | same |

@@ -60,6 +60,7 @@ Decision maker for every row: the Maintainer (the developer). **Sponsor: none ye
 ## Exit rule (AC-59) and retest (AC-60): status on 2026-11-17
 - **No Critical or High finding is open** (none was raised). Every finding has a proposed disposition; all six are approved (decisions table). The decision is the developer's, because no sponsor is named.
 - **AC-60.** No code, route, response or contract change is proposed, so nothing in the application needs a retest yet. `php artisan test` (120), `flutter test` (15), the Postman collection (149) and `scan-secrets.ps1` are **not rerun in this chunk**; the last results are the chunk 3 baseline. They are rerun in the chunk 6 evidence round, and also right after any code fix the developer approves (for example the FIND-02 script change). The original scenario for FIND-04 is the dry run described above.
+- **Update 2026-11-17 (chunk 6c).** The regression set was rerun: `php artisan test` 120 and `flutter test` 15 (developer's word), Postman 149 of 149 (screenshot seen), `scan-secrets.ps1` explained in [`test-matrix.md`](test-matrix.md). No finding changed. The FIND-02 text did not appear in that one reset, which does not change its disposition.
 
 ## Decisions (approved by the developer in chat, 2026-11-17; recorded here by Claude)
 | ID | Developer's decision (approve, change, reject) | Date |

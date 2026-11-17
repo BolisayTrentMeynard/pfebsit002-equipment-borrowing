@@ -1,6 +1,6 @@
 # Week 17 Evidence Index: Final Integration UAT and Evaluation
 
-Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); committed and pushed (`06f72bd`, `8228cf9`). Chunk 4 (UAT session, run 2026-11-17) is committed and pushed (`d0a2765`, `6163514`). Chunk 5 (findings triage) is committed and pushed (`7180daa`), dispositions approved by the developer 2026-11-17; the developer's reading of the recording is added to the session record. Chunk 6 is not started.
+Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); committed and pushed (`06f72bd`, `8228cf9`). Chunk 4 (UAT session, run 2026-11-17) is committed and pushed (`d0a2765`, `6163514`). Chunk 5 (findings triage) is committed and pushed (`7180daa`), dispositions approved by the developer 2026-11-17; the developer's reading of the recording is added to the session record. Chunk 6a and 6b (evaluation matrix filled, merged risk register, handover statement, contribution record, evidence map) are written, docs only; 6c and 6d wait for the regression rerun.
 
 Drive folder link: to be added.
 
@@ -52,6 +52,16 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | [`findings-register.md`](findings-register.md) | FIND-01 to FIND-06 with severity, type, scenario, evidence, proposed disposition and decision maker (AC-58); exit-rule and retest status (AC-59, AC-60); a decisions table for the developer to fill in |
 | [`task-cards.md`](task-cards.md) | Revision section appended for UAT-05, UAT-06 and UAT-10 (FIND-04); the text used in the session is unchanged |
 
+## Final assembly (chunk 6a and 6b)
+| File | What it is |
+|------|------------|
+| [`evaluation-matrix.md`](evaluation-matrix.md) | Filled: eight attributes with assessments (2 Demonstrated, 6 Partly demonstrated), gaps and risks; test numbers are the 2026-11-15 results until the 6c rerun |
+| [`residual-risk-register.md`](residual-risk-register.md) | The ONE merged register: R1 to R42 with status |
+| [`handover-statement.md`](handover-statement.md) | Conditional handover statement (AC-66): what was shown, what was not, conditions; sponsor pending |
+| [`contribution-record.md`](contribution-record.md) | Who did what; AI assistance; for the developer to correct |
+| [`evidence-map.md`](evidence-map.md) | AC-54 to AC-68 to files and results |
+| [`maintenance-plan.md`](maintenance-plan.md) | Backlog now B1 to B16 (B15 and B16 from the findings) |
+
 ## Chunk status
 | Chunk | Status |
 |-------|--------|
@@ -60,5 +70,5 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | 2 Tester-independent documents (DR-008 scores, final diagram, evaluation matrix skeleton, maintenance plan, change control, handover README draft) | Committed and pushed (`bfdfa34` 2a, `32840ab` 2b, `07e1f6f` 2c); docs only, no test run |
 | 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); other files committed in `8228cf9` |
 | 4 UAT session | Committed and pushed (`d0a2765`, `6163514`). Recording reviewed by the developer later the same day (AC-55 12 of 12, AC-56 within limits, AC-57 partly; his reading, not seen by Claude). Session run 2026-11-17 (about 12:46 to 13:16); `uat-session-record.md` filled from the developer's report (per-card notes not kept, recording is the source); integrity checks clean; FIND-01 explained (not a defect); all three testers accept; no sponsor yet |
-| 5 Findings, fixes, retest, regression | Committed and pushed (`7180daa`). Triage 2026-11-17: 6 findings, none Critical or High, one Medium proposed (records gap), no code fix proposed; dispositions approved 2026-11-17; regression not rerun (no code change), planned for chunk 6 |
-| 6 Final assembly, evidence round, tag | Not started |
+| 5 Findings, fixes, retest, regression | Committed and pushed (`7180daa`, `cbd98d1`). Triage 2026-11-17: 6 findings, none Critical or High, one Medium proposed (records gap), no code fix proposed; dispositions approved 2026-11-17; regression not rerun (no code change), planned for chunk 6 |
+| 6 Final assembly, evidence round, tag | 6a and 6b written 2026-11-17 (docs only, built, untested). 6c (test matrix, traceability results, interpretation note, checks) and 6d (fresh reviewer, root README, merge, tag) wait for the regression rerun |

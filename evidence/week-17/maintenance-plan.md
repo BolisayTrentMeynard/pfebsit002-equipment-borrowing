@@ -64,6 +64,8 @@ Each line comes from the Week 16 readiness conditions, the risk register or DR-0
 | B12 | Bundle the Roboto font so staging does not depend on Google's CDN | R33 | Maintainer | Low priority |
 | B13 | A fail-fast database check so an outage answers in under 8 to 9 s | R24 | Maintainer | Not built |
 | B14 | Name an owner, a contact channel and a response time | R22 | Sponsor, Maintainer | Needed before any real use |
+| B15 | In `deploy\staging-release.ps1`, give the readiness check its own timeout of 60 s with up to 3 tries 5 s apart, so a slow first answer is not reported as a failure | R41, FIND-02 | Maintainer | Deferred in Week 17 (approved 2026-11-17). Cause is a hypothesis (a 10 s curl timeout). Test by running the script twice and reading the readiness line |
+| B16 | Make UAT runs cleaner: re-run `UatSeeder` before each run; name the item and the number of days on every task card (revised cards for UAT-05, UAT-06, UAT-10 are in `task-cards.md`); optionally hide the demo items EQ-001 to EQ-006 from testers by an operator step | R39, FIND-03, FIND-04, FIND-05 | Maintainer | Revised cards not yet run with testers; no code change proposed |
 
 ## What this plan does not cover
 Real data, real users, hosting, data-protection duties, accessibility audit, load above about 5 users, and any change to the registered scope. Those need the sponsor's written decision and, for hosting and load, the backlog items above.

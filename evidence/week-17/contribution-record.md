@@ -25,7 +25,7 @@ Flutter and Laravel scaffolds, the Laravel framework and its Composer packages, 
 ## Developer's review (2026-11-17)
 The developer read the table above and said every row is true; nothing was changed. The line below is for him to write.
 
-**What I found hardest (developer's own words):** _to be written by the developer before submission; Claude cannot know it._
-
-## Left for the developer
-Write the line above. The optional reflection on the four module prompts is not written (it is first in the cut order of the plan).
+## What I found hardest 
+Running the UAT session. “The hardest part was running the UAT session myself. I was facilitator, operator and note-taker at once, so I did not write per-card notes or time the cards, and the first session had to be thrown away and restarted. I now know a second person should keep the observation sheet.”
+Keeping the evidence honest. “The hardest part was keeping the evidence honest when the results looked good. I had to write ‘not measured’ or ‘partly met’ where I had no stopwatch times or had not seen a message, instead of writing ‘met’, and I had to explain every scan result, including the ones that looked bad.”
+Operating the system. “The hardest part was operating the system by hand: resetting staging, seeding fake data, starting the worker and reading the logs. Small mistakes, like the wrong password, a missing option on a command or a stopped staging stack, cost more time than the code itself.”

@@ -34,7 +34,7 @@ Status: **session run 2026-11-17 (staging, three testers). Filled by Claude from
 | E9 | Consent read | before 12:46 | Yes for all three |
 
 ## Attempts (one row per tester per scenario; order from `uat-plan.md` section 11)
-**What was kept:** the developer did not write per-card notes. His estimate for every card is "about 30 seconds to 1 minute", from memory, not from a stopwatch. Help counts, exact words, messages and tester comments are not recorded; they can only be read from the screen recording. The developer reported that nothing went wrong in any card. Planned attempts: 12; AC-55 threshold 10 of 12 completed without help. **AC-55 and AC-56 cannot be confirmed from these notes**: the developer's report says all cards were completed and fast, but "without help" and the times are not evidenced.
+**What was kept:** the developer did not write per-card notes. His estimate for every card is "about 30 seconds to 1 minute", from memory, not from a stopwatch. Help counts, exact words, messages and tester comments are not recorded; they can only be read from the screen recording. The developer reported that nothing went wrong in any card. Planned attempts: 12; AC-55 threshold 10 of 12 completed without help. **AC-55 and AC-56 cannot be confirmed from these notes (see "Recording review" below: the developer's later reading of the recording)**: the developer's report says all cards were completed and fast, but "without help" and the times are not evidenced.
 
 | Order | Scenario | Tester | Item or step | Start | Stopwatch | Help (count and exact words) | Completed | What the tester said or did | Finding ID |
 |-------|----------|--------|--------------|-------|-----------|------------------------------|-----------|-----------------------------|------------|
@@ -61,6 +61,35 @@ Status: **session run 2026-11-17 (staging, three testers). Filled by Claude from
 | Time from restart to the list loading | Not recorded |
 
 Observed wrong-password message (screenshot taken before the session, at the sign-in screen, for `uatborrower1`): **"Email or password is wrong."** It does not say whether the e-mail exists.
+
+## Recording review (developer's reading, reported in chat 2026-11-17)
+**Source and limits.** The developer watched the screen recording and answered a private form (`recording-notes.txt`, kept outside the repo) in which every attempt had an expected line and he wrote only differences. He reported in chat: all attempts matched the expected lines, no visible hesitation, "all perfect". **Claude did not see the recording.** There are no timestamps, no stopwatch times and no observation sheets, and the only viewer was the facilitator himself, so this is one person's reading, not an independent check. He did not say on which date he watched or whether he watched all of it. The cells above that say "not recorded" are left as written; this section adds what the review reported.
+
+| Attempt | Scenario | Tester | Developer's reading of the recording |
+|---------|----------|--------|--------------------------------------|
+| 1 | UAT-01 | T1 | Matched expected: no help, completed, under 3:00 |
+| 2 | UAT-02 | T2 | Matched expected: no help, completed, under 2:00, note written on the reject |
+| 3 | UAT-03 | T3 | Matched expected: no help, completed, under 2:00 |
+| 4 | UAT-04 | T2 | Matched expected: no help, T2 named the overdue item and its borrower |
+| 5 | UAT-08 | T2 | Matched expected: no help, 3 items found, one marked handled with a note, 2 remain (also shown by `ops:status` at 13:15) |
+| 6 | UAT-05 | T3 | Matched expected: no help, under 2:00 (a return was recorded; the items are in the request rows, FIND-01) |
+| 7 | UAT-06 | T1 | Case 1 (short reason) and case 3 (open request on the same item) matched expected. **Case 2 (loan too long): see the exception below** |
+| 8 to 10 | UAT-07 | T1, T2, T3 | Matched expected: no help, wrong password refused, sign-in worked, sign-out worked |
+| 11 | UAT-09 | T1 | Matched expected: no help, "Cannot reach the server" with Try again, list loaded after the restart |
+| 12 | UAT-10 | T1 | Matched expected: no help, nothing cut off, a request created |
+
+**Exception (UAT-06, case 2).** Asked what number T1 typed for "too long", the developer answered "not too long". Claude reads this as: the number was **not above 7**, which agrees with the 7-day request for EQ-006 in the request rows (7 is allowed). If so, the refusal "Enter 1 to 7 days." was **not shown** and case 2 was **not exercised**. This is Claude's reading of a short answer; the developer can correct it.
+
+**Still "not recorded" (the developer chose to leave them so):** the note text T2 typed at UAT-08 and T2's own words on why the reminders failed; the message line under "Cannot reach the server" at UAT-09, the seconds from restart to the list loading, and what T1 said they would do; exact times; the viewing date and how much of the recording was watched.
+
+**What this means for the criteria (stated with the limits above)**
+| Criterion | Result | Basis |
+|-----------|--------|-------|
+| AC-55 (10 of 12 attempts without help) | **12 of 12 completed without help, per the developer's reading** | His reading of the recording; no observation sheets exist. In attempt 7 case 2 was not exercised |
+| AC-56 (UAT-01 3 min; UAT-02, 03, 05 2 min each) | **No card over its limit, per the developer's reading** | No stopwatch and no exact times; he judged each against the limit |
+| AC-57 (tester states the cause and recovers without help) | **Partly confirmed** | Recovered without help: UAT-07 (three testers), UAT-08, UAT-09, UAT-06 cases 1 and 3. **Not exercised:** UAT-06 case 2. The testers' own words are not recorded |
+
+The ratings (all 5, free text "good") remain illustrations. The "loan too long" rule is covered by the form and server checks reported in chunk 3 (AC-68) and by the Week 15 tests, not by this session.
 
 ## Post-session ratings (1 = strongly disagree, 5 = strongly agree; question 5 is free text)
 | Question | T1 | T2 | T3 |

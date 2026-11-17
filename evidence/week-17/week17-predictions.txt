@@ -1,0 +1,70 @@
+Week 17 - Predictions (to be committed ALONE and BEFORE chunk 3 or the UAT session)
+
+Student: Bolisay Trent Meynard, BSIT 3A
+Project: #5 Equipment Borrowing Reminder System
+Date drafted: 2026-11-15 (by Claude, from reading the code and evidence in the 2026-11-15 clean zip; NOTHING has been run).
+Commit this file by itself as the first commit on branch week-17-uat. The commit time is the developer's record. Write the hash and time into lab-log.md afterwards, in a later commit.
+Rule: wrong predictions stay in the record. Actual results go underneath later, never over the prediction. Any new prediction for chunk 3 or 4 is added as an addendum, committed alone, before that run.
+
+These are guesses, not measurements. They come from reading the code, the Week 16 evidence and general knowledge of how first-time users behave. Where a range is given, the real value may fall outside it; that is a finding.
+
+Chunk 3 - Pre-UAT readiness on staging
+
+ R1  The reminder path on staging (never run before).
+     - With the Caddy root certificate set in NOTIFIER_CA_BUNDLE, `reminders:run` then `queue:work` gives the status SENT for a due item.
+     - With a wrong NOTIFIER_URL set in the worker's own PowerShell window, the item goes to FAILED_NEEDS_HUMAN after 3 attempts (waits of about 5 s and 15 s), and it appears in the approver's Manual handling list.
+     - Chance that the FIRST try fails for a setup reason (certificate path, quoting, a window without the variable): about 40%. It is a setup problem, not a code problem, and it is recorded either way.
+ R2  Regression baseline: `php artisan test` 86 passed, `flutter test` 15 passed, Postman 149/149 on staging, scan-secrets finds the same known items as in Week 16 (the word "password" only as a variable name). No surprises expected.
+ R3  Keyboard-only walk: login and New request can be completed with Tab, Enter and Space. Predicted problem: at least one place where the focus order or the focus ring is not obvious (Flutter Web draws on a canvas). 200% zoom: readable, no horizontal scrolling on the login screen; the detail screen may need scrolling.
+
+Chunk 4 - The UAT session (3 testers, 10 scenarios, about 11 attempts)
+
+ U1  Completion without help: 8 to 10 of 11 attempts (73% to 91%). The 80% threshold (AC-55) is met, but not by a wide margin.
+ U2  Where testers hesitate most: UAT-06 (invalid requests; they will not know which rule they broke until the message appears) and UAT-04 (finding the overdue item; the Overdue tab is named clearly, so hesitation of 10 to 40 s, not failure).
+ U3  Time on task (first-time testers): new request 1.5 to 3 min; approve and reject 1 to 2 min; release 1 to 2 min; return and inspection 1 to 2 min. Most likely miss of AC-56: the new request, because of the reason field and the item picker.
+ U4  UAT-09 (API stopped): the tester sees a generic error screen ("Something went wrong" or "Cannot reach the server"; with Caddy still up and the API down I expect the generic one) and understands that "Try again" is the next step in all 3 cases. Predicted finding: the message does not say whether the problem is theirs or the server's (Low or Medium).
+ U5  UAT-08 (Manual handling): approver T2 finds the list and the "Mark handled" button quickly; the hesitation is the required note (what to write). Predicted: understood after the example text in the dialog.
+ U6  Findings: 4 to 10 in total. Kinds: mostly usability and wording (Low and Medium), 0 to 1 High, 0 Critical. At least one finding will be about dates and times (due date shown in local time, reminder text in UTC in the log), and at least one will be a request outside the registered scope (a change request, for example "send me a real e-mail"). Predicted fixes needed: 1 to 3 (cap is 5).
+ U7  Acknowledgements: each tester gives "accept" or "accept with conditions"; nobody gives "reject". The sponsor line is likely "pending" because an instructor or custodian may not be available.
+ U8  Operator burden: the relay will take longer than 90 minutes (100 to 140) because of resets and the two operator actions (reminder failure, API stop).
+ U9  Data after the session: integrity checks (no double open request per item and borrower, no item released twice, audit rows add up) are clean. Errors in the API log: only the expected 401 (wrong password), 422 (invalid requests) and the 5xx or 502 during UAT-09.
+
+Not predicted on purpose: performance numbers (3 users, nothing to measure), anything about real offices.
+
+==============================================================================================================
+ADDENDUM 1 (chunk 3, sections 3a to 3c). Written 2026-11-15 by Claude BEFORE chunk 3 is run. NOTHING has been run.
+The text above is unchanged. R1 to R3 and U1 to U9 stay as written. Commit this addendum by itself, before any chunk 3 step.
+==============================================================================================================
+
+Basis: the code, scripts and documents in the 2026-11-15 clean zip (UatSeeder, RunReminders, ReminderPlanner, SendReminderJob, SignedHttpNotifier,
+config/reminders.php, deploy scripts, home_screen.dart) and the progress log. Guesses, not measurements.
+
+Correction to R2 (the original line stays as written above): R2 said "php artisan test 86 passed". That was the baseline before chunk 1. Chunk 1 added tests
+and the developer's MySQL run gave 120 passed (750 assertions). The expected baseline now is: php artisan test 120 passed (750 assertions), flutter test 15 passed,
+Postman 149/149 on staging, scan-secrets finds nothing new (exit code 0). D11 in the plan still reads "86"; that number is out of date and is not used for this baseline.
+
+3a - Baseline on staging
+ A1  `php -m` shows an OPcache line (Zend OPcache). Reset with `staging-release.ps1 -SkipBuild` finishes with "RESULT: staging is up" in about 10 to 30 s (13 s was the Week 16 figure), if app\build\web exists.
+ A2  Postman 149/149 on the first counted run after a reset. Chance that the first run needs a rerun for a setup reason (wrong environment selected, password variable empty, no reset first): about 30%. A rerun after a reset is allowed and recorded; the failed first run stays in the record.
+ A3  backup-restore.ps1: every table "same" (rows and checksum). The dump holds only the 4 fake users and 6 fake items, so it is small.
+ A4  scan-secrets.ps1: exit code 0, positive control above zero.
+
+3b - Reminder path on staging (seed UatSeeder on a freshly reset database, then `reminders:run`)
+ B1  Seed data for the run: UAT-005 is due in 20 h, UAT-006 is 2 days overdue, and UatSeeder already made one FAILED_NEEDS_HUMAN overdue notification for uatapprover a moment ago.
+ B2  `php artisan reminders:run` prints: queued 2, skipped (limit) 0, skipped (sent recently) 1.
+     Why 2: one reminder to uatborrower1 (UAT-005) and one overdue escalation to the OTHER approver (approver@example.test from DatabaseSeeder, which also exists in the database).
+     Why 1 skipped: the seeded failed notification for uatapprover was created less than 20 hours ago.
+ B3  Worker with the Caddy certificate set and the right URL: both queued notifications reach SENT with attempts = 1, within about 5 s of the worker starting. (R1 gave the setup-failure chance, about 40%; not repeated here.)
+ B4  After UatSeeder is run again (that is its reset: it rebuilds the UAT data and deletes the old UAT notifications), with NOTIFIER_URL set to a closed port in the worker's own window: both notifications end as FAILED_NEEDS_HUMAN, attempts = 3, last_error "Receiver not reachable.", about 20 to 30 s after the worker starts (waits of 5 s and 15 s). The worker keeps running and waits for new jobs.
+ B5  Manual handling (approver tab) then lists 3 items, not 1: the seeded one plus the two new ones, because the list shows every FAILED_NEEDS_HUMAN notification whatever the recipient. UAT-08's card says "listed once" and "the list is empty afterwards"; that will not hold as written. This is a mismatch between UatSeeder, the task card and uat-plan.md section 5 ("one failed reminder is NOT pre-made"). It is recorded, not fixed, in chunk 3.
+ B6  A shell variable in the worker's window beats the value in .env.staging (the first value Laravel reads from the real environment wins). Confirmed by B4 happening at all.
+ B7  `php artisan ops:status` after B4 shows "Manual handling backlog" of 3 and "Jobs waiting" of 0.
+
+3c - The relay run alone, recorded
+ C1  All 10 scenarios can be completed by the developer alone with the seeded data, with one dependency: UAT-02 needs the request made in UAT-01 (UatSeeder makes only ONE pending request, UAT-003; the plan said two). Order matters: UAT-01 first.
+ C2  At 1280 px the app shows the side navigation rail; at 360 px the bottom navigation bar (the code switches at 700 px width). At 200% zoom on a 1280 px window the page is 640 CSS px wide, so the narrow layout appears.
+ C3  At 360 px nothing is cut off on the login screen and on New request; the table-like cards may need scrolling. Chance of at least one visible overflow or clipped text at 360 px on some screen: about 30%.
+ C4  The recording of the whole relay run lasts 20 to 40 minutes (no testers, no stopwatch pauses).
+ C5  The keyboard-only walk (R3 above) is the one most likely to find a problem; the 200% zoom check is the least likely.
+
+Not predicted on purpose: performance numbers (no load test in chunk 3; k6 is not rerun unless a fix touches the request path).

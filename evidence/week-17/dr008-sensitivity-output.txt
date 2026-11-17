@@ -1,0 +1,87 @@
+DR-008 weighted scores (weight x score / 100)
+
+Criterion        Weight   A   B   C
+Reliability          20   2   4   4
+Security             15   2   4   3
+Supportability       15   4   3   2
+Complexity           12   5   3   2
+Change impact        10   4   4   2
+Skills               10   5   3   1
+Cost                 10   5   4   2
+Data ownership        8   5   5   3
+
+Weighted points per option (sum of weight x score; divide by 100 for the score):
+  A: 370  ->  3.70
+  B: 371  ->  3.71
+  C: 253  ->  2.53
+
+Profiles (steps 1 to 5 of the committed method)
+1 Baseline                         A 3.70  B 3.71  C 2.53   order B > A > C   top B, lead 0.01 (tie within 0.05)
+2 Equal weights (12.5 each)        A 4.00  B 3.75  C 2.38   order A > B > C   top A, lead 0.25
+3 Reliability-heavy (35)           A 3.38  B 3.76  C 2.81   order B > A > C   top B, lead 0.38
+4 Security-heavy (30)              A 3.40  B 3.76  C 2.61   order B > A > C   top B, lead 0.36
+5 Cost and skills heavy (20, 20)   A 4.03  B 3.66  C 2.27   order A > B > C   top A, lead 0.37
+
+Step 6: each weight moved by +10 and -10 points, the others scaled to keep the total at 100
+(a weight cannot go below 0: Data ownership -10 is set to 0, a change of -8)
+Reliability +10 (to 30)            A 3.49  B 3.75  C 2.71   order B > A > C   top B, lead 0.26
+Reliability -10 (to 10)            A 3.91  B 3.67  C 2.35   order A > B > C   top A, lead 0.24
+Security +10 (to 25)               A 3.50  B 3.74  C 2.59   order B > A > C   top B, lead 0.24
+Security -10 (to 5)                A 3.90  B 3.68  C 2.47   order A > B > C   top A, lead 0.22
+Supportability +10 (to 25)         A 3.74  B 3.63  C 2.47   order A > B > C   top A, lead 0.11
+Supportability -10 (to 5)          A 3.66  B 3.79  C 2.59   order B > A > C   top B, lead 0.13
+Complexity +10 (to 22)             A 3.85  B 3.63  C 2.47   order A > B > C   top A, lead 0.22
+Complexity -10 (to 2)              A 3.55  B 3.79  C 2.59   order B > A > C   top B, lead 0.24
+Change impact +10 (to 20)          A 3.73  B 3.74  C 2.47   order B > A > C   top B, lead 0.01 (tie within 0.05)
+Change impact -10 (to 0)           A 3.67  B 3.68  C 2.59   order B > A > C   top B, lead 0.01 (tie within 0.05)
+Skills +10 (to 20)                 A 3.84  B 3.63  C 2.36   order A > B > C   top A, lead 0.21
+Skills -10 (to 0)                  A 3.56  B 3.79  C 2.70   order B > A > C   top B, lead 0.23
+Cost +10 (to 20)                   A 3.84  B 3.74  C 2.47   order A > B > C   top A, lead 0.10
+Cost -10 (to 0)                    A 3.56  B 3.68  C 2.59   order B > A > C   top B, lead 0.12
+Data ownership +10 (to 18)         A 3.84  B 3.85  C 2.58   order B > A > C   top B, lead 0.01 (tie within 0.05)
+Data ownership -8 (to 0)           A 3.59  B 3.60  C 2.49   order B > A > C   top B, lead 0.01 (tie within 0.05)
+
+Does the top option ever change?
+  Top option over all 21 cases: A, B
+  A on top in 8 cases
+  B on top in 13 cases
+
+Break-even weight for A versus B (one weight changed, the others scaled; where the score gap is 0)
+  Baseline gap A minus B: -1 weighted points = -0.01 score points
+  Reliability      A = B at weight  19.6 (baseline 20); A is ahead below that weight, B ahead above it
+  Security         A = B at weight  14.6 (baseline 15); A is ahead below that weight, B ahead above it
+  Supportability   A = B at weight  15.8 (baseline 15); A is ahead above that weight, B ahead below it
+  Complexity       A = B at weight  12.4 (baseline 12); A is ahead above that weight, B ahead below it
+  Change impact    A and B score the same here, so changing this weight never separates them by itself
+  Skills           A = B at weight  10.4 (baseline 10); A is ahead above that weight, B ahead below it
+  Cost             A = B at weight  10.9 (baseline 10); A is ahead above that weight, B ahead below it
+  Data ownership   A and B score the same here, so changing this weight never separates them by itself
+
+Score sensitivity (baseline weights): does a one-point change in one score flip A and B?
+  A Reliability 2 -> 3: A 3.90  B 3.71  lead A
+  A Reliability 2 -> 1: A 3.50  B 3.71  lead B
+  A Security 2 -> 3: A 3.85  B 3.71  lead A
+  A Security 2 -> 1: A 3.55  B 3.71  lead B
+  A Supportability 4 -> 5: A 3.85  B 3.71  lead A
+  A Supportability 4 -> 3: A 3.55  B 3.71  lead B
+  A Complexity 5 -> 4: A 3.58  B 3.71  lead B
+  A Change impact 4 -> 5: A 3.80  B 3.71  lead A
+  A Change impact 4 -> 3: A 3.60  B 3.71  lead B
+  A Skills 5 -> 4: A 3.60  B 3.71  lead B
+  A Cost 5 -> 4: A 3.60  B 3.71  lead B
+  A Data ownership 5 -> 4: A 3.62  B 3.71  lead B
+  B Reliability 4 -> 5: A 3.70  B 3.91  lead B
+  B Reliability 4 -> 3: A 3.70  B 3.51  lead A
+  B Security 4 -> 5: A 3.70  B 3.86  lead B
+  B Security 4 -> 3: A 3.70  B 3.56  lead A
+  B Supportability 3 -> 4: A 3.70  B 3.86  lead B
+  B Supportability 3 -> 2: A 3.70  B 3.56  lead A
+  B Complexity 3 -> 4: A 3.70  B 3.83  lead B
+  B Complexity 3 -> 2: A 3.70  B 3.59  lead A
+  B Change impact 4 -> 5: A 3.70  B 3.81  lead B
+  B Change impact 4 -> 3: A 3.70  B 3.61  lead A
+  B Skills 3 -> 4: A 3.70  B 3.81  lead B
+  B Skills 3 -> 2: A 3.70  B 3.61  lead A
+  B Cost 4 -> 5: A 3.70  B 3.81  lead B
+  B Cost 4 -> 3: A 3.70  B 3.61  lead A
+  B Data ownership 5 -> 4: A 3.70  B 3.63  lead A

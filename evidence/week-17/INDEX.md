@@ -1,6 +1,6 @@
 # Week 17 Evidence Index: Final Integration UAT and Evaluation
 
-Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); committed and pushed (`06f72bd`, `8228cf9`). Chunk 4 (UAT session, run 2026-11-17) is committed and pushed (`d0a2765`, `6163514`). Chunk 5 (findings triage) is committed and pushed (`7180daa`), dispositions approved by the developer 2026-11-17; the developer's reading of the recording is added to the session record. Chunk 6a and 6b (evaluation matrix filled, merged risk register, handover statement, contribution record, evidence map) are written, docs only; 6c and 6d wait for the regression rerun.
+Status (2026-11-17): **Complete on `week-17-uat`.** All chunks committed and pushed through `4fc272c`. Remaining: merge `week-17-uat` into `main` and tag `week-17` (developer's decision only).
 
 Drive folder link: to be added.
 
@@ -58,7 +58,7 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | [`evaluation-matrix.md`](evaluation-matrix.md) | Filled: eight attributes with assessments (2 Demonstrated, 6 Partly demonstrated), gaps and risks; test numbers are the 2026-11-15 results until the 6c rerun |
 | [`residual-risk-register.md`](residual-risk-register.md) | The ONE merged register: R1 to R42 with status |
 | [`handover-statement.md`](handover-statement.md) | Conditional handover statement (AC-66): what was shown, what was not, conditions; sponsor pending |
-| [`contribution-record.md`](contribution-record.md) | Who did what; AI assistance; for the developer to correct |
+| [`contribution-record.md`](contribution-record.md) | Who did what; AI assistance; developer's own "hardest" line added (`4fc272c`) |
 | [`evidence-map.md`](evidence-map.md) | AC-54 to AC-68 to files and results |
 | [`maintenance-plan.md`](maintenance-plan.md) | Backlog now B1 to B16 (B15 and B16 from the findings) |
 
@@ -76,7 +76,7 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | [`../../README.md`](../../README.md) | The root README, replaced from the handover draft: status banner, set-up, configuration, data model, API, reminders, tests, staging, limits, support by role, where things are, AI assistance |
 | [`../INDEX.md`](../INDEX.md) | Evidence index, Week 17 row updated |
 | [`handover-readme-draft.md`](handover-readme-draft.md) | The draft, now marked superseded and kept as history |
-| [`contribution-record.md`](contribution-record.md) | Developer's review recorded; his own "hardest" line still to be written |
+| [`contribution-record.md`](contribution-record.md) | Developer's own "hardest" line added; developer's review section removed by the developer |
 
 ## Chunk status
 | Chunk | Status |
@@ -87,4 +87,4 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); other files committed in `8228cf9` |
 | 4 UAT session | Committed and pushed (`d0a2765`, `6163514`). Recording reviewed by the developer later the same day (AC-55 12 of 12, AC-56 within limits, AC-57 partly; his reading, not seen by Claude). Session run 2026-11-17 (about 12:46 to 13:16); `uat-session-record.md` filled from the developer's report (per-card notes not kept, recording is the source); integrity checks clean; FIND-01 explained (not a defect); all three testers accept; no sponsor yet |
 | 5 Findings, fixes, retest, regression | Committed and pushed (`7180daa`, `cbd98d1`). Triage 2026-11-17: 6 findings, none Critical or High, one Medium proposed (records gap), no code fix proposed; dispositions approved 2026-11-17; regression not rerun (no code change), planned for chunk 6 |
-| 6 Final assembly, evidence round, tag | 6a and 6b pushed (`8eb40a6`); 6c pushed (`bbca42c`, regression rerun 2026-11-17: backend 120 and Flutter 15 on the developer's word, Postman 149 of 149, scans explained). 6d written 2026-11-17 (docs only, built, untested; not committed yet): root README replaced. Open: a clean-clone run or fresh reviewer (AC-65, R42), the developer's "hardest" line, the sponsor (R37), the merge to `main` and the tag `week-17` (the developer's decision) |
+| 6 Final assembly, evidence round, tag | 6a and 6b pushed (`8eb40a6`); 6c pushed (`bbca42c`, regression rerun 2026-11-17: backend 120 and Flutter 15 on the developer's word, Postman 149 of 149, scans explained); 6d pushed (`4fc272c`, root README replaced, contribution record complete). **Clean-clone check: not done** (developer's choice; AC-65 and R42 remain partly met). Open: sponsor (R37), merge to `main` and tag `week-17` (developer's decision) |

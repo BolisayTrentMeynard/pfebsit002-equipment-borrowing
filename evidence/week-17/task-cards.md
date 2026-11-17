@@ -23,3 +23,14 @@ Read the **Say** text word for word. Do not explain the app. Item names in [brac
 5. Anything I wanted to do that the app could not do (free text; recorded as possible change requests).
 
 Ratings are recorded per role code. With 3 testers they are illustrations, not statistics.
+
+## Revision after the 2026-11-17 session (proposed in chunk 5, FIND-04; not yet used with testers)
+The table above is the text read in the session and stays unchanged. In the session UAT-05, UAT-06 and UAT-10 named no item and no number, so testers chose their own (see `findings-register.md`). For any rerun use these three Say texts instead. The other cards stay as they are. Item names come from `test-data-plan.md`.
+
+| Card | Say (revised) | What changed | Success (facilitator only) |
+|------|---------------|--------------|----------------------------|
+| UAT-05 | "A borrower has brought back the Extension Cord Epsilon. Record that it came back and that it is in good condition." | Names the item | Return of UAT-005 recorded with result good; request closed; the borrower sees it closed |
+| UAT-06 | "Try to make a request with a very short reason, only one or two letters. Then try to borrow an item for 10 days. Then try to request the Projector Alpha again; you already have an open request for it. For each, tell me what the app told you." | Names the reason length, the number of days (above the 7-day maximum) and the item | Each is refused with a message that names the problem; nothing is created (no new request after the three tries) |
+| UAT-10 | "Do the same as the first card, for the Laptop Cart Beta, with this window made narrow." (Operator sets the window to about 360 px wide.) | Names the item | A request for UAT-002 is created at narrow width; nothing is cut off or unusable |
+
+Facilitator note: the item the tester asks for in UAT-06 (second try) can be any free one; the 10 days must be more than 7. If the tester picks another item, say nothing and write the item and the number of days on the observation sheet.

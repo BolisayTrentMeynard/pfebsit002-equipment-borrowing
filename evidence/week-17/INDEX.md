@@ -1,6 +1,6 @@
 # Week 17 Evidence Index: Final Integration UAT and Evaluation
 
-Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); committed and pushed (`06f72bd`, `8228cf9`). Chunks 4 to 6 are not started.
+Status (2026-11-15): **In progress.** Chunk 0 (design documents) is committed (`6c3849b`; predictions alone in `a67e08b`). Chunk 1 (OpenAPI, drift test, UAT seeder) is committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`, per the developer). Chunk 2 (the tester-independent documents below) is committed and pushed (`bfdfa34`, `32840ab`, `07e1f6f`); docs only, the developer reran the DR-008 script and the output matched. Nothing here has been run with testers. Chunk 3 (pre-UAT readiness) was run on 2026-11-15 and its record is filled in (deviations D1 to D10); committed and pushed (`06f72bd`, `8228cf9`). Chunk 4 (UAT session, run 2026-11-17) is committed and pushed (`d0a2765`, `6163514`). Chunk 5 (findings triage) is written, dispositions approved by the developer 2026-11-17. Chunk 6 is not started.
 
 Drive folder link: to be added.
 
@@ -46,6 +46,12 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 |------|------------|
 | [`uat-session-record.md`](uat-session-record.md) | Session record, filled from the developer's report after the session: run header, entry checks, 12 planned attempts with their items, ratings, acknowledgements (sponsor pending), raw findings, the integrity check before any reset, gate. Empty cells are filled during the session; T1 to T3 only |
 
+## Findings (chunk 5)
+| File | What it is |
+|------|------------|
+| [`findings-register.md`](findings-register.md) | FIND-01 to FIND-06 with severity, type, scenario, evidence, proposed disposition and decision maker (AC-58); exit-rule and retest status (AC-59, AC-60); a decisions table for the developer to fill in |
+| [`task-cards.md`](task-cards.md) | Revision section appended for UAT-05, UAT-06 and UAT-10 (FIND-04); the text used in the session is unchanged |
+
 ## Chunk status
 | Chunk | Status |
 |-------|--------|
@@ -53,6 +59,6 @@ UAT-08 expects 3 items listed and 2 remaining (card and `uat-plan.md` section 5 
 | 1 OpenAPI, drift test, UAT seed | Committed and pushed (`7c3b435`, `ef569a2`, `33d12a0`); `php artisan test` 120 passed on the developer's MySQL |
 | 2 Tester-independent documents (DR-008 scores, final diagram, evaluation matrix skeleton, maintenance plan, change control, handover README draft) | Committed and pushed (`bfdfa34` 2a, `32840ab` 2b, `07e1f6f` 2c); docs only, no test run |
 | 3 Pre-UAT readiness (baseline, reminder path on staging, relay dry run) | Run 2026-11-15; record filled in; addendum committed alone (`06f72bd`); other files committed in `8228cf9` |
-| 4 UAT session | Session run 2026-11-17 (about 12:46 to 13:16); `uat-session-record.md` filled from the developer's report (per-card notes not kept, recording is the source); integrity checks clean; FIND-01 explained (not a defect); all three testers accept; no sponsor yet |
-| 5 Findings, fixes, retest, regression | Not started |
+| 4 UAT session | Committed and pushed (`d0a2765`, `6163514`). Session run 2026-11-17 (about 12:46 to 13:16); `uat-session-record.md` filled from the developer's report (per-card notes not kept, recording is the source); integrity checks clean; FIND-01 explained (not a defect); all three testers accept; no sponsor yet |
+| 5 Findings, fixes, retest, regression | Triage written 2026-11-17: 6 findings, none Critical or High, one Medium proposed (records gap), no code fix proposed; dispositions approved 2026-11-17; regression not rerun (no code change), planned for chunk 6 |
 | 6 Final assembly, evidence round, tag | Not started |
